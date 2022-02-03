@@ -1,0 +1,18 @@
+<launch>
+    <arg name="Kp1" default="1"/>
+    <arg name="Ki1" default="1"/>
+    <arg name="Kd1" default="1"/>
+
+    <arg name="Kp2" default="1"/>
+    <arg name="Ki2" default="1"/>
+    <arg name="Kd2" default="1"/>
+    
+
+    <!-- NODES -->
+
+    <node name="pid_node"  pkg="integ_trajectory_tracking"  type="pid_controller" output="screen" required="true">
+        <param name="Kp1" value="$(arg Kp1)"/>
+        <param name="trajectory_topic" value="/trajectory"/>
+    </node>
+
+</launch>

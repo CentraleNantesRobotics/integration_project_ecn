@@ -1,6 +1,0 @@
-devel_space: /home/ecn/integration_project_ecn/trajectory_generation/devel
-install: false
-install_space: /home/ecn/integration_project_ecn/trajectory_generation/install
-profile: default
-source_space: /home/ecn/integration_project_ecn/trajectory_generation/src
-workspace: /home/ecn/integration_project_ecn/trajectory_generation

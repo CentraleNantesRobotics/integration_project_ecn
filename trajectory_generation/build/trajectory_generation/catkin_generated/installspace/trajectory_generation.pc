@@ -1,8 +1,0 @@
-prefix=/home/ecn/integration_project_ecn/trajectory_generation/install
-
-Name: trajectory_generation
-Description: Description of trajectory_generation
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 
