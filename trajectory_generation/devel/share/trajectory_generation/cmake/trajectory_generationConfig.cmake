@@ -1,0 +1,1 @@
+/home/ecn/integration_project_ecn/trajectory_generation/devel/.private/trajectory_generation/share/trajectory_generation/cmake/trajectory_generationConfig.cmake

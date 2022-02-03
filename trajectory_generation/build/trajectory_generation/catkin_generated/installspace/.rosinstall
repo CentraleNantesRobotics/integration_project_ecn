@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/ecn/integration_project_ecn/trajectory_generation/install/setup.sh

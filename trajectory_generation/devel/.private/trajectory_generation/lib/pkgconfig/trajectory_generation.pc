@@ -1,0 +1,8 @@
+prefix=/home/ecn/integration_project_ecn/trajectory_generation/devel/.private/trajectory_generation
+
+Name: trajectory_generation
+Description: Description of trajectory_generation
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 
