@@ -1,0 +1,47 @@
+<launch>
+
+  <!-- these are the arguments you can pass this launch file, for example paused:=true -->
+  <arg name="paused" default="false"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+  
+  <arg name="control" default="effort"/>
+
+  <!-- We resume the logic in empty_world.launch, changing only the name of the world to be launched -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find integ_gazebo)/worlds/integ.world"/>
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="headless" value="$(arg headless)"/>
+  </include>
+
+  <!-- Load the URDF into the ROS Parameter Server -->
+     <param name="robot_description"
+    command="$(find xacro)/xacro --inorder '$(find integ_description)/urdf/arm2022.urdf.xacro'" />
+     
+  <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF robot -->
+  <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+    args="-urdf -model integ -param robot_description"/>
+
+   <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF target -->
+  <node name="target_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+    args="-urdf -z 1 -x 1 -y 1 -model cible_simple -file $(find integ_description)/urdf/cible.urdf"/>
+    
+    <!-- Run controllers (http://gazebosim.org/tutorials/?tut=ros_control) -->
+  <!-- Load joint controller configurations from YAML file to parameter server -->
+  <rosparam file="$(find integ_gazebo)/params/arm_control.yaml" command="load"/>
+
+  <!-- load the controllers -->
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+    output="screen" args="hand_$(arg control)_controller finger_$(arg control)_controller joint_state_controller"/>
+  
+<!-- Also robot_state_publisher -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+
+  
+    
+</launch>
