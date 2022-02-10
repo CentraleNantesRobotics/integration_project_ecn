@@ -4,20 +4,20 @@ joint_state_controller:
     publish_rate: 50  
 
 # Position Controllers ---------------------------------------
-finger_position_controller:
+joint1_position_controller:
     type: effort_controllers/JointPositionController
-    joint: hand_finger_joint
+    joint: shoulder
     pid: {p: 100.0, i: 0.01, d: 10.0, antiwindup: true, i_clamp_min: -40.0, i_clamp_max: 40.}
     
-hand_position_controller:
+joint2_position_controller:
     type: effort_controllers/JointPositionController
-    joint: arm_hand_joint
+    joint: elbow
     pid: {p: 100.0, i: 0.01, d: 10.0, antiwindup: true, i_clamp_min: -40.0, i_clamp_max: 40.} 
     
-finger_effort_controller:
+joint1_effort_controller:
     type: effort_controllers/JointEffortController
-    joint: hand_finger_joint
+    joint: shoulder
     
-hand_effort_controller:
+joint2_effort_controller:
     type: effort_controllers/JointEffortController
-    joint: arm_hand_joint
+    joint: elbow
