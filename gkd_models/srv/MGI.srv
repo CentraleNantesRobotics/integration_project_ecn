@@ -1,6 +1,0 @@
-float64[2] pos
-bool high_elbow
-
----
-
-sensor_msgs/JointState output

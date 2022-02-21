@@ -1,5 +1,0 @@
-sensor_msgs/JointState input
-
----
-
-float64[2] pos
