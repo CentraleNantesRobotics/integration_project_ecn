@@ -52,7 +52,8 @@ int main (int argc, char** argv)
 
 
     float integral_error[2] = {};
-    float position_error[2] = {}, velocity_error[2] = {};
+    float position_error[2] = {};
+    float velocity_error[2] = {};
 
 
     ros::Rate rate(1/Te);
