@@ -1,0 +1,5 @@
+sensor_msgs/JointState input
+
+---
+
+gkd_models/dyn_mats output
