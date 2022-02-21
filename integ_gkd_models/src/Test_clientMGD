@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+
+import rospy
+from sensor_msgs.msg import JointState
+from gkd_models.srv import *
+
+def test_callback():
+	S = JointState()
+	S.name.append('fake_joint1')
+	S.position.append(2)
+	S.name.append('fake_joint2')
+	S.position.append(2)
+
+
+	rospy.wait_for_service('MGD')
+	mgd = rospy.ServiceProxy('MGD', MGD)
+
+	try:
+		resp = mgd(S)
+		print(resp)
+	except rospy.ServiceException as exc:
+		print("Service did not process request: " + str(exc))
+
+
+if __name__ == '__main__':
+    try:
+        test_callback()
+    except rospy.ROSInterruptException:
+        pass
