@@ -7,16 +7,8 @@
 #include <vector>
 #include <geometry_msgs/Pose2D.h>
 #include <sensor_msgs/JointState.h>
-#include <math.h>
-
-
-// Useful structure
-struct Vector2f
-{
-    float x;
-    float y;
-};
-
+#include <cmath>
+#include <stdlib.h>
 
 
 class GenerationNode
@@ -30,24 +22,52 @@ public:
     void stateSubscribingCallback(const sensor_msgs::JointState&);
     void waypointSubscribingCallback(const geometry_msgs::Pose2D&);
     void publishingCallback();
-    void computingCallback();
+    sensor_msgs::JointState computingCallback(const int fastIndex, const int slowIndex);
 
+    // Utilities
+    void compute_tf();
+    void compute_ta();
+    void compute_td();
+    void compute_ti();
+    void rearrangeTimes();
+    void nextWaypoint_update();
+    bool waypointReached();
 
 private:
-    // Buffer
-    std::vector<Vector2f> buffer_ ;
+    // Buffers
+    std::vector<std::vector<double>> positions_buffer_ ;
+    std::vector<std::vector<double>> velocities_buffer_;
+    std::vector<std::vector<double>> accelerations_buffer_;
 
     // Variables
-    std::vector<double> q_;
-    std::vector<double> dq_;
-    std::vector<double> ddq_;
+    sensor_msgs::JointState current_joints_states_;
     geometry_msgs::Pose2D current_waypoint_;
-    std::vector<sensor_msgs::JointState> current_trajectory_;
+    sensor_msgs::JointState next_joints_states_;
+    std::vector<double> tf_, ta_, td_, ti_;
+    double timeSinceArrival_ = 0;
+    std::vector<int> config_ = {TRAPEZOIDAL, TRAPEZOIDAL};
+    std::vector<double> vmax_temp_ = vmax_;
+    std::vector<double> amax_temp_ = amax_;
 
     // Parameters
-    double freq_;
-    double vmax1, vmax2;
-    double amax1, amax2;
+    // Definition of arms lengths
+    const double l1_ = 0.5;
+    const double l2_ = 0.5;
+    // Definition of frequencies and durations
+    const double publishing_freq_ = 1000;
+    const double publishing_duration_ = 1/publishing_freq_;
+    const double computing_freq_ = 1000;
+    const double computing_duration_ = 1/computing_freq_;
+    // Definition of the tresholds : we consider that a number is null if it is smaller than the threshold
+    const double time_threshold_ = 0.05;
+    const double metric_threshold_  = 0.01;
+    // Definition of maximal velocities and accelerations
+    const std::vector<double> vmax_ = {10, 10};
+    const std::vector<double> amax_ = {10, 10};
+    // Definition of some constants indicating the type of the function followed by the angular speed of a joint
+    const int TRAPEZOIDAL = 0;
+    const int BANGBANG = 1;
+
 
     // NH
     ros::NodeHandle nh_;
@@ -60,18 +80,20 @@ private:
     ros::Timer computingTimer_;
 
     // MGD + MGI
-    float l1_, l2_;
-
-    void mgd(const float &q1, const float &q2, float &x, float &y)
+    std::vector<double> mgd(const std::vector<double> &q)
     {
-        x = l1_*std::cos(q1) + l2_*std::cos(q1 + q2);
-        y = l1_*std::sin(q1) + l2_*std::sin(q1 + q2);
+        double x = l1_*std::cos(q[0]) + l2_*std::cos(q[0] + q[1]);
+        double y = l1_*std::sin(q[0]) + l2_*std::sin(q[0] + q[1]);
+
+        return {x, y};
     };
 
-    void mgi(const float &x, const float &y, float &q1, float &q2)
+    std::vector<double> mgi(const geometry_msgs::Pose2D &X)
     {
-        q2 = std::acos((l1_*l1_ + l2_*l2_)/(2*l1_*l2_));
-        q1 = std::atan2(y, x) - q2 ;
+        double q2 = std::acos((l1_*l1_ + l2_*l2_)/(2*l1_*l2_));
+        double q1 = std::atan2(X.x, X.y) - q2 ;
+
+        return {q1, q2};
     };
 
 };
