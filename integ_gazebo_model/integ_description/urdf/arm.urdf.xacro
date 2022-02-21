@@ -30,22 +30,51 @@
   <xacro:arg name="izz_1" default="'${(mass_1/6)*(side*side)}'"/> 
   <xacro:arg name="ixx_2" default="'${(mass_2/12)*(side*side+length_2*length_2)}'"/>
   <xacro:arg name="iyy_2" default="'${(mass_2/12)*(side*side+length_2*length_2)}'"/>  
-  <xacro:arg name="izz_2" default="'${(mass_2/6)*(side*side)}'"/> 
+  <xacro:arg name="izz_2" default="'${(mass_2/6)*(side*side)}'"/>
   
+  <!-- we need to use a <xacro:if> </xacro:if> to use a formula as default value for an argument -->
+  <xacro:property name="ixx_1_valid" value="$(arg ixx_1)"/>  
+  <xacro:if value="${ixx_1_valid > 0}">  
+	<xacro:property name="ixx_1" value="$(arg ixx_1)"/>  
+  </xacro:if>
+  <xacro:unless value="${ixx_1_valid > 0}">  
+    <xacro:property name="ixx_1" value="${(mass_1/12)*(side*side+length_1*length_1)}"/> 
+  </xacro:unless>
   
-  <xacro:property name="ixx_1" value="$(arg ixx_1)"/>  
+  <xacro:property name="ixx_2_valid" value="$(arg ixx_2)"/>  
+  <xacro:if value="${ixx_2_valid > 0}">  
+	<xacro:property name="ixx_2" value="$(arg ixx_2)"/>  
+  </xacro:if>
+  <xacro:unless value="${ixx_2_valid > 0}">  
+    <xacro:property name="ixx_2" value="${(mass_2/12)*(side*side+length_2*length_2)}"/> 
+  </xacro:unless>
+  
+   
   <xacro:property name="iyy_1" value="$(arg iyy_1)"/>
   <xacro:property name="izz_1" value="$(arg izz_1)"/>
-  <xacro:property name="ixx_2" value="$(arg ixx_2)"/>
   <xacro:property name="iyy_2" value="$(arg iyy_2)"/>
   <xacro:property name="izz_2" value="$(arg izz_2)"/>
   
   
   <xacro:arg name="com_1" default="'${length_1/2}'"/> 
   <xacro:arg name="com_2" default="'${length_2/2}'"/> 
+  
+  <xacro:property name="com_1_valid" value="$(arg com_1)"/>  
+  <xacro:if value="${com_1_valid > 0}">  
+	<xacro:property name="com_1" value="$(arg com_1)"/>  
+  </xacro:if>
+  <xacro:unless value="${com_1_valid > 0}">  
+    <xacro:property name="com_1" value="${length_1/2}"/> 
+  </xacro:unless>
 
-  <xacro:property name="com_1" value="$(arg com_1)"/>
-  <xacro:property name="com_2" value="$(arg com_2)"/>  
+  <xacro:property name="com_2_valid" value="$(arg com_2)"/>  
+  <xacro:if value="${com_2_valid > 0}">  
+	<xacro:property name="com_2" value="$(arg com_2)"/>  
+  </xacro:if>
+  <xacro:unless value="${com_2_valid > 0}">  
+    <xacro:property name="com_2" value="${length_2/2}"/> 
+  </xacro:unless>
+ 
   
 
 
