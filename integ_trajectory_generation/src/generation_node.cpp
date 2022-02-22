@@ -2,31 +2,35 @@
 
 GenerationNode::GenerationNode()
 {
-    // Variables initialisation
-    current_joints_states_.name = {"arm1", "arm2"};
-    current_joints_states_.position = {0, 0};
-    current_joints_states_.velocity = {0, 0};
-    current_joints_states_.effort = {0, 0};
-    next_joints_states_.name = {"arm1", "arm2"};
+    /******** Variables initialisation ********/
+    for (auto state : {current_joints_states_ , next_joints_states_}){
+        state.name = {"arm1", "arm2"};
+        state.position = {0, 0};
+        state.velocity = {0, 0};
+        state.effort = {0, 0};
+    }
+    config_ = {TRAPEZOIDAL, TRAPEZOIDAL};
+    timeSinceArrival_ = 0;
+    vmax_temp_ = vmax_;
+    amax_temp_ = amax_;
 
-    // Member initialisations
+    /******** ROS Stuff initialisations ********/
     publisher_ = nh_.advertise<sensor_msgs::JointState>("trajectory", 1000);
     state_subscriber_ = nh_.subscribe("tf", 1000, &GenerationNode::stateSubscribingCallback, this);
     waypoint_subscriber_ = nh_.subscribe("waypoints", 1000, &GenerationNode::waypointSubscribingCallback, this);
+    // TO DO : Problème sur timers
+    // publishingTimer_ = nh_.createTimer(ros::Duration(publishing_duration_), &GenerationNode::publishingCallback);
+    // computingTimer_ = nh_.createTimer(ros::Duration(computing_duration_), &GenerationNode::computingCallback);
 
-    // Timer initialisations (pb sur les timers)
-    publishingTimer_ = nh_.createTimer(ros::Duration(publishing_duration_), &GenerationNode::publishingCallback);
-    computingTimer_ = nh_.createTimer(ros::Duration(computing_duration_), &GenerationNode::computingCallback);
 
+    /******** While there's no actual subscription ********/
     // Waypoint
     current_waypoint_.x = 5.0;
     current_waypoint_.y = 5.0;
-
     // Buffer initialisations
-    positions_buffer_.push_back({0, 0});
+    positions_buffer_.push_back(mgi(current_waypoint_));
     velocities_buffer_.push_back({0, 0});
     accelerations_buffer_.push_back({0, 0});
-
     // Times initialisations
     compute_tf();
     compute_ta();
@@ -44,6 +48,7 @@ void GenerationNode::waypointSubscribingCallback(const geometry_msgs::Pose2D& ms
 {
     current_waypoint_ = msg;
     positions_buffer_.push_back(mgi(current_waypoint_));
+    // Might change but for now we want a null velocity and acceleration when arriving at each waypoint
     velocities_buffer_.push_back({0, 0});
     accelerations_buffer_.push_back({0, 0});
 }
@@ -73,9 +78,9 @@ void GenerationNode::publishingCallback()
 
     // Compute next joints states for trajectory tracking step
     if (tf_[0] < tf_[1]){
-        next_joints_states_ = computingCallback(0, 1);
+        computingCallback(0, 1);
     }else{
-        next_joints_states_ = computingCallback(1, 0);
+        computingCallback(1, 0);
     }
 
     // Stamp

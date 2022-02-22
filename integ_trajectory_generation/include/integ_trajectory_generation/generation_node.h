@@ -15,16 +15,16 @@ class GenerationNode
 {
 
 public:
-    // Construction
+    /******** Construction ********/
     GenerationNode();
 
-    // Callbacks
+    /******** Callbacks ********/
     void stateSubscribingCallback(const sensor_msgs::JointState&);
     void waypointSubscribingCallback(const geometry_msgs::Pose2D&);
     void publishingCallback();
-    sensor_msgs::JointState computingCallback(const int fastIndex, const int slowIndex);
+    void computingCallback(const int, const int);
 
-    // Utilities
+    /******** Utilities ********/
     void compute_tf();
     void compute_ta();
     void compute_td();
@@ -33,53 +33,7 @@ public:
     void nextWaypoint_update();
     bool waypointReached();
 
-private:
-    // Buffers
-    std::vector<std::vector<double>> positions_buffer_ ;
-    std::vector<std::vector<double>> velocities_buffer_;
-    std::vector<std::vector<double>> accelerations_buffer_;
-
-    // Variables
-    sensor_msgs::JointState current_joints_states_;
-    geometry_msgs::Pose2D current_waypoint_;
-    sensor_msgs::JointState next_joints_states_;
-    std::vector<double> tf_, ta_, td_, ti_;
-    double timeSinceArrival_ = 0;
-    std::vector<int> config_ = {TRAPEZOIDAL, TRAPEZOIDAL};
-    std::vector<double> vmax_temp_ = vmax_;
-    std::vector<double> amax_temp_ = amax_;
-
-    // Parameters
-    // Definition of arms lengths
-    const double l1_ = 0.5;
-    const double l2_ = 0.5;
-    // Definition of frequencies and durations
-    const double publishing_freq_ = 1000;
-    const double publishing_duration_ = 1/publishing_freq_;
-    const double computing_freq_ = 1000;
-    const double computing_duration_ = 1/computing_freq_;
-    // Definition of the tresholds : we consider that a number is null if it is smaller than the threshold
-    const double time_threshold_ = 0.05;
-    const double metric_threshold_  = 0.01;
-    // Definition of maximal velocities and accelerations
-    const std::vector<double> vmax_ = {10, 10};
-    const std::vector<double> amax_ = {10, 10};
-    // Definition of some constants indicating the type of the function followed by the angular speed of a joint
-    const int TRAPEZOIDAL = 0;
-    const int BANGBANG = 1;
-
-
-    // NH
-    ros::NodeHandle nh_;
-    // Members
-    ros::Publisher publisher_;
-    ros::Subscriber state_subscriber_;
-    ros::Subscriber waypoint_subscriber_;
-    // Timers
-    ros::Timer publishingTimer_;
-    ros::Timer computingTimer_;
-
-    // MGD + MGI
+    /******** MGD + MGI ********/
     std::vector<double> mgd(const std::vector<double> &q)
     {
         double x = l1_*std::cos(q[0]) + l2_*std::cos(q[0] + q[1]);
@@ -95,6 +49,61 @@ private:
 
         return {q1, q2};
     };
+
+private:
+
+    /******** Buffers ********/
+    std::vector<std::vector<double>> positions_buffer_ ;
+    std::vector<std::vector<double>> velocities_buffer_;
+    std::vector<std::vector<double>> accelerations_buffer_;
+
+    /******** Variables ********/
+    sensor_msgs::JointState current_joints_states_;
+    sensor_msgs::JointState next_joints_states_;
+    geometry_msgs::Pose2D current_waypoint_;
+    std::vector<double> tf_, ta_, td_, ti_;
+    std::vector<int> config_;
+    std::vector<double> vmax_temp_;
+    std::vector<double> amax_temp_;
+    double timeSinceArrival_;
+
+    /******** Parameters ********/
+
+    // Definition of arms lengths
+    const double l1_ = 0.5;
+    const double l2_ = 0.5;
+
+    // Definition of frequencies and durations
+    const double publishing_freq_ = 1000;
+    const double publishing_duration_ = 1/publishing_freq_;
+    const double computing_freq_ = 1000;
+    const double computing_duration_ = 1/computing_freq_;
+
+    // Definition of the tresholds : we consider that a number is null if it is smaller than the threshold
+    const double time_threshold_ = 0.05;
+    const double metric_threshold_  = 0.01;
+
+    // Definition of maximal velocities and accelerations
+    const std::vector<double> vmax_ = {10, 10};
+    const std::vector<double> amax_ = {10, 10};
+
+    // Definition of some constants indicating the type of the function followed by the angular speed of a joint
+    const int TRAPEZOIDAL = 0;
+    const int BANGBANG = 1;
+
+    /******** ROS Stuff ********/
+
+    // Node Handle
+    ros::NodeHandle nh_;
+    // Members
+    ros::Publisher publisher_;
+    ros::Subscriber state_subscriber_;
+    ros::Subscriber waypoint_subscriber_;
+    // Timers
+    ros::Timer publishingTimer_;
+    ros::Timer computingTimer_;
+
+
 
 };
 
