@@ -226,7 +226,7 @@
    
     <transmission name="shoulder_transmission">
       <type>transmission_interface/SimpleTransmission</type>
-      <joint name="shoulder_joint">
+      <joint name="shoulder">
         <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
       </joint>
       <actuator name="shoulder_actuator"/>
@@ -273,7 +273,7 @@
    
     <transmission name="elbow_transmission">
       <type>transmission_interface/SimpleTransmission</type>
-      <joint name="elbow_joint">
+      <joint name="elbow">
         <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
       </joint>
       <actuator name="elbow_actuator"/>
