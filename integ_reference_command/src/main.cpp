@@ -45,7 +45,7 @@ int main(int argc, char **argv)
     double lambda = 50;
     double l1 = 0.8;
     double l2 = 0.6;
-    double offset = 0.1;
+    double offset = 0.0;
     double focal = 0.01;
 
     // ROS part    featurePointPositionSub.
@@ -64,30 +64,31 @@ int main(int argc, char **argv)
 		auto L = s.interaction(); //L is the interaction matrix
 		sensor_msgs::JointState targetJointState; //this is what we will publish
 
-        vpVelocityTwistMatrix RotCam = GetRotCam();
+        vpRotationMatrix RotCam3x3 = GetRotCam3x3(); // Changement de repère de la cam "usuel" à celle de Gazebo.
+        vpVelocityTwistMatrix RotCam6x6 = GetRotCamToGazebo(RotCam3x3);
         vpVelocityTwistMatrix W = GetW(offset);
         vpVelocityTwistMatrix R = GetR(q[0],q[1]);
 
         // Computing what we need to get the joints velocity.
 //		vpMatrix sVector(s.get_s());
-//        auto sPoint = -lambda * sVector;
 
+        auto sPoint = - lambda * RotCam3x3 * s.get_s(); //
         auto J = GetJac(q[0], q[1], l1, l2);
-        auto Js = L * W * R * J;
-        auto qPoint = -Js.pseudoInverse() * lambda * s.get_s();
-
+        auto Jc = W * R * J;
+        auto JcGazebo = RotCam6x6 * Jc;
+        auto Js = L * JcGazebo;
+        auto qPoint = Js.pseudoInverse() * sPoint;
 
         //Deplacement
-        std::pair<double, double> deplacement = Deplacement(l1,l2,q[0],q[1],focal);//sVector[0],sVector[1]);
-
+        std::pair<double, double> deplacement = Deplacement(l1,l2,q[0],q[1],focal, s.get_x(), s.get_y());
         // MGI
         std::pair<double, double> angles = MGI(deplacement.first, deplacement.second, l1, l2);
-        // Valeurs à renvoyer
 
+        // Valeurs à renvoyer
         targetJointState.name.push_back("moteur1");
         targetJointState.name.push_back("moteur2");
-		targetJointState.velocity.push_back(qPoint[0][0]);
-		targetJointState.velocity.push_back(qPoint[1][0]);
+        targetJointState.velocity.push_back(qPoint[0]);
+        targetJointState.velocity.push_back(qPoint[1]);
         targetJointState.position.push_back(angles.first);
         targetJointState.position.push_back(angles.second);
         velocityPub.publish(targetJointState);
