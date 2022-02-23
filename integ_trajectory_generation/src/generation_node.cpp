@@ -4,7 +4,7 @@ GenerationNode::GenerationNode()
 {
     /******** Variables initialisation ********/
     for (auto state : {current_joints_states_ , next_joints_states_}){
-        state.name = {"arm1", "arm2"};
+        state.name = {"shoulder", "elbow"};
         state.position = {0, 0};
         state.velocity = {0, 0};
         state.effort = {0, 0};
@@ -15,15 +15,15 @@ GenerationNode::GenerationNode()
     amax_temp_ = amax_;
 
     /******** ROS Stuff initialisations ********/
-    publisher_ = nh_.advertise<sensor_msgs::JointState>("trajectory", 1000);
-    state_subscriber_ = nh_.subscribe("tf", 1000, &GenerationNode::stateSubscribingCallback, this);
-    waypoint_subscriber_ = nh_.subscribe("waypoints", 1000, &GenerationNode::waypointSubscribingCallback, this);
-    // TO DO : Problème sur timers
-    // publishingTimer_ = nh_.createTimer(ros::Duration(publishing_duration_), &GenerationNode::publishingCallback);
-    // computingTimer_ = nh_.createTimer(ros::Duration(computing_duration_), &GenerationNode::computingCallback);
+    state_publisher_ = nh_.advertise<sensor_msgs::JointState>("/state", 1000);
+    trajectory_publisher_ = nh_.advertise<sensor_msgs::JointState>("/trajectory", 1000);
+    state_subscriber_ = nh_.subscribe("/tf", 1000, &GenerationNode::stateSubscribingCallback, this);
+    // TO DO : eventually, a waypoint subscriber...
+    // waypoint_subscriber_ = nh_.subscribe("waypoints", 1000, &GenerationNode::waypointSubscribingCallback, this);
+    // TO DO : repair
+    //publishingTimer_ = nh_.createTimer(ros::Duration(publishing_duration_), &GenerationNode::publishingCallback);
 
-
-    /******** While there's no actual subscription ********/
+    /******** While there are no actual subscriptions ********/
     // Waypoint
     current_waypoint_.x = 5.0;
     current_waypoint_.y = 5.0;
@@ -36,12 +36,13 @@ GenerationNode::GenerationNode()
     compute_ta();
     compute_td();
     compute_ti();
-
 }
 
 void GenerationNode::stateSubscribingCallback(const sensor_msgs::JointState& msg)
 {
-    current_joints_states_ = msg;
+    current_joints_states_.position = msg.position;
+    current_joints_states_.velocity = msg.velocity;
+    current_joints_states_.effort = msg.effort;
 }
 
 void GenerationNode::waypointSubscribingCallback(const geometry_msgs::Pose2D& msg)
@@ -65,28 +66,26 @@ void GenerationNode::nextWaypoint_update()
     rearrangeTimes();
 
     // Reset time since arrival
-    timeSinceArrival_ = 0;
+    timeSinceArrival_ = time_threshold_;
 }
 
 void GenerationNode::publishingCallback()
 {
+    // Check if the waypoint is reached
     if (waypointReached()) {
         nextWaypoint_update();
-    }else{
+    } else {
         timeSinceArrival_ += publishing_duration_;
     }
 
     // Compute next joints states for trajectory tracking step
-    if (tf_[0] < tf_[1]){
-        computingCallback(0, 1);
-    }else{
-        computingCallback(1, 0);
-    }
+    computingCallback();
 
     // Stamp
+    current_joints_states_.header.stamp = ros::Time::now();
     next_joints_states_.header.stamp = ros::Time::now();
 
     // Publish
-    publisher_.publish(next_joints_states_);
-
+    state_publisher_.publish(current_joints_states_);
+    trajectory_publisher_.publish(next_joints_states_);
 }

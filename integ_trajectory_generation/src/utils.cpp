@@ -5,8 +5,9 @@
 
 #include <integ_trajectory_generation/generation_node.h>
 
-/* This function calculates the vector tf of respective time needed by each arm to reach it's goal angle, using the trapezoidal
- * definition of the angular speed or the bang-bang definition if the arm does not need to move enough.
+
+/* This function calculates the vector tf of respective time needed by each joint to reach it's goal angle, using the trapezoidal
+ * definition of the angular speed or the bang-bang definition if the joint does not need to move enough.
  *
  * Inputs : - max angular speed of the joint vmax
  *          - max angular acceleration of the joint amax
@@ -14,7 +15,7 @@
  *          - angular speed at the goal point dqb
  *          - angle of the starting point qa
  *          - angle of the goal point qb
- * Output : vector tf of respective time needed by each arm to reach it's goal angle   */
+ * Output : vector tf of respective time needed by each joint to reach it's goal angle   */
 
 void GenerationNode::compute_tf()
 {
@@ -48,12 +49,14 @@ void GenerationNode::compute_tf()
 }
 
 
-/* This function calculates the vector ta of respective duration of acceleration for each arm in a trapezoidal configuration.
+
+
+/* This function calculates the vector ta of respective duration of acceleration for each joint in a trapezoidal configuration.
  *
  * Inputs : - max angular speed of the joint vmaxq1
  *          - max angular acceleration of the joint amax
  *          - angular speed at the starting point dqa
- * Output : vector ta of respective duration of acceleration for each arm in a trapezoidal configuration */
+ * Output : vector ta of respective duration of acceleration for each joint in a trapezoidal configuration */
 
 void GenerationNode::compute_ta()
 {
@@ -75,12 +78,14 @@ void GenerationNode::compute_ta()
 }
 
 
-/* This function calculates the vector td of respective duration until deceleration for each arm in a trapezoidal configuration.
+
+
+/* This function calculates the vector td of respective duration until deceleration for each joint in a trapezoidal configuration.
  *
  * Inputs : - max angular speed of the joint vmax
  *          - max angular acceleration of the joint amax
  *          - angular speed at the goal point dqb
- * Output : vector td of respective duration until deceleration for each arm in a trapezoidal configuration   */
+ * Output : vector td of respective duration until deceleration for each joint in a trapezoidal configuration   */
 
 void GenerationNode::compute_td()
 {
@@ -101,6 +106,8 @@ void GenerationNode::compute_td()
     // Update td_ attribute
     td_ = td;
 }
+
+
 
 
 /* This function calculates the vector ti of respective duration of acceleration ti for a bang-bang configuration.
@@ -134,7 +141,28 @@ void GenerationNode::compute_ti()
 }
 
 
-/* This function rearranges the tf, ta, td, and ti vectors and modifies the acceleration and velocity vectors accordingly.
+
+/* This function subtracts two vectors, value by value.
+ *
+ * Inputs : two vectors
+ * Output : the vector of their substraction.            */
+std::vector<double> substractVectors(const std::vector<double> &vec1, const std::vector<double> &vec2){
+    std::vector<double> vecSub;
+
+    if (vec1.size()==vec2.size()){
+        for (int i=0; i<int(vec1.size()); i++){
+            vecSub[i] = vec1[i] - vec2[i];
+        }
+    } else {
+        std::cout << "Erreur dans les dimensions de vecteur" << std::endl;
+    }
+
+    return vecSub;
+}
+
+
+
+/* This function rearranges the tf, ta, td, and ti vectors and modifies the maximum acceleration and velocity vectors accordingly.
  *
  * Inputs : - max angular speed of the joint vmax
  *          - max angular acceleration of the joint amax
@@ -142,13 +170,50 @@ void GenerationNode::compute_ti()
  *          - angular speed at the goal point dqb
  *          - total time needed for the movemement tf
  * Output : - rearranged times
- *          - modified accelerations
- *          - modified velocities */
+ *          - modified max accelerations
+ *          - modified max velocities */
 
 void GenerationNode::rearrangeTimes()
 {
 
+    // Results
+    std::vector<double> tf, ta, td, ti;
+
+    if (config_[0] == TRAPEZOIDAL && config_[1] == TRAPEZOIDAL){
+
+        for (int i=0; i<2; i++){
+            ta[i] = *std::max_element(ta_.begin(), ta_.end());
+            td[i] = ta[i] + *std::max_element(substractVectors(td_, ta_).begin(), substractVectors(td_, ta_).end());
+            tf[i] = td[i] + *std::max_element(substractVectors(tf_, td_).begin(), substractVectors(tf_, td_).end());
+
+            amax_temp_[i] = 2/(pow(tf[i], 2) - pow(td[i]-ta[i], 2)) * (amax_[i]/2 * (pow(ta_[i], 2) + pow(tf_[i]-td_[i], 2)) + velocities_buffer_[0][i]*((td[i]-td_[i])-(tf[i]-tf_[i])) + vmax_[i]*(td_[i]-ta_[i]) - current_joints_states_.velocity[i]*(td[i]-ta_[i]));
+            vmax_temp_[i] = current_joints_states_.velocity[i] + amax_temp_[i]*ta[i];
+        }
+
+    } else if (config_[0] == BANGBANG && config_[1] == BANGBANG){
+
+        for (int i=0; i<2; i++){
+            ti[i] = *std::max_element(ti_.begin(), ti_.end());
+            tf[i] = ti[i] + *std::max_element(substractVectors(tf_, ti_).begin(), substractVectors(tf_, ti_).end());
+
+            amax_temp_[i] = 2/(pow(ti[i], 2) + pow(ti[i]+tf[i], 2)) * (amax_[i]/2 * (pow(ti_[i], 2) + pow(tf_[i]+ti_[i], 2)) - velocities_buffer_[0][i]*((tf[i]-ti[i])-(tf_[i]-ti_[i]))  - current_joints_states_.velocity[i]*(ti[i]-ti_[i]));
+        }
+
+    } else {
+
+        // TO DO : différentes configs
+
+    }
+
+    // Update members
+    tf_ = tf;
+    ta_ = ta;
+    td_ = td;
+    ti_ = ti;
+
 }
+
+
 
 /* This function indicates if the next waypoint has been reached.
  *
@@ -165,29 +230,30 @@ bool GenerationNode::waypointReached()
     return (metric < metric_threshold_);
 }
 
-                                                                                                                                    // A FAIRE : écrire la description de la fonction
-// TO DO : Header + T O U T
-void GenerationNode::computingCallback(const int fastIndex, const int slowIndex)
+
+// TO DO : Header
+void GenerationNode::computingCallback()
 {
 
     if (config_[0] == TRAPEZOIDAL && config_[1] == TRAPEZOIDAL)
     {
-        for (int i : {fastIndex, slowIndex}){
+        for (int i=0; i<2; i++){
 
-            if (ta_[i] > time_threshold_) { //the joints are still in their accelerating phase
+            if (ta_[i] > timeSinceArrival_) { //the joints are still in their accelerating phase
 
+                next_joints_states_.effort[i] = amax_temp_[i];
                 next_joints_states_.velocity[i] = current_joints_states_.velocity[i] + publishing_duration_ * amax_temp_[i];
                 next_joints_states_.position[i] = current_joints_states_.position[i] + publishing_duration_ * (next_joints_states_.velocity[i] + current_joints_states_.velocity[i])/2;
 
-            } else if(td_[i] > time_threshold_) { //the joints are in the phase of constant angular speed
+            } else if(td_[i] > timeSinceArrival_) { //the joints are in the phase of constant angular speed
 
+                next_joints_states_.effort[i] = 0;
                 next_joints_states_.velocity[i] = vmax_temp_[i];
                 next_joints_states_.position[i] = current_joints_states_.position[i] + publishing_duration_ * (next_joints_states_.velocity[i] + current_joints_states_.velocity[i])/2;
 
-                // TO DO : modifier les conditions qui vérifient dans quelle phase du trapèze on est
-
              } else { //the joints are in the decelarating phase
 
+                next_joints_states_.effort[i] = - amax_temp_[i];
                 next_joints_states_.velocity[i] = current_joints_states_.velocity[i] - publishing_duration_ * amax_temp_[i];
                 next_joints_states_.position[i] = current_joints_states_.position[i] + publishing_duration_ * (next_joints_states_.velocity[i] + current_joints_states_.velocity[i])/2;
 
@@ -196,28 +262,28 @@ void GenerationNode::computingCallback(const int fastIndex, const int slowIndex)
 
     } else if (config_[0] == BANGBANG && config_[1] == BANGBANG) {
 
-        for (int i : {fastIndex, slowIndex}){
+        for (int i=0; i<2; i++){
 
-            if (ti_[i] > time_threshold_) //the joints are still in their accelerating phase
+            if (ti_[i] > timeSinceArrival_) //the joints are still in their accelerating phase
             {
+                next_joints_states_.effort[i] = amax_temp_[i];
                 next_joints_states_.velocity[i] = current_joints_states_.velocity[i] + publishing_duration_ * amax_temp_[i];
                 next_joints_states_.position[i] = current_joints_states_.position[i] + publishing_duration_ * (next_joints_states_.velocity[i] + current_joints_states_.velocity[i])/2;
 
-             } else if (ti_[i] < time_threshold_) { //the joints are in the decelarating phase
+             } else { //the joints are in the decelarating phase
 
-                next_joints_states_.velocity[i] = vmax_temp_[i];
+                next_joints_states_.effort[i] = - amax_temp_[i];
+                next_joints_states_.velocity[i] = current_joints_states_.velocity[i] - publishing_duration_ * amax_temp_[i];
                 next_joints_states_.position[i] = current_joints_states_.position[i] + publishing_duration_ * (next_joints_states_.velocity[i] + current_joints_states_.velocity[i])/2;
-
-            } else {
-                // TO DO:
-
-                // next_joints_states_.velocity[i] = current_joints_states_.velocity[i] - publishing_duration_ * amax_temp_[i];
-                // next_joints_states_.position[i] = current_joints_states_.position[i] + publishing_duration_ * (next_joints_states_.velocity[i] + current_joints_states_.velocity[i])/2;
 
             }                                                                                                           //  <-- A FAIRE : pas d'idée si profils différents
         }
+
     } else {
 
-        // TO DO:
+        // TO DO: différentes configs
     }
 }
+
+
+

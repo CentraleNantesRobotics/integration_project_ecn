@@ -5,6 +5,7 @@ using namespace std;
 
 int main(int argc, char **argv)
 {
+
   ros::init(argc, argv, "integ_trajectory_generation");
 
   GenerationNode node;
@@ -12,4 +13,5 @@ int main(int argc, char **argv)
   ros::spin();
 
   return 0;
+
 }

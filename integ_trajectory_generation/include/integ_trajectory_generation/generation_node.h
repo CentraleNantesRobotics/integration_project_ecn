@@ -5,6 +5,7 @@
 #include <ros/ros.h>
 #include <ros/time.h>
 #include <vector>
+#include <iostream>
 #include <geometry_msgs/Pose2D.h>
 #include <sensor_msgs/JointState.h>
 #include <cmath>
@@ -22,7 +23,7 @@ public:
     void stateSubscribingCallback(const sensor_msgs::JointState&);
     void waypointSubscribingCallback(const geometry_msgs::Pose2D&);
     void publishingCallback();
-    void computingCallback(const int, const int);
+    void computingCallback();
 
     /******** Utilities ********/
     void compute_tf();
@@ -33,7 +34,7 @@ public:
     void nextWaypoint_update();
     bool waypointReached();
 
-    /******** MGD + MGI ********/
+    /******** MGD + MGI ********/    
     std::vector<double> mgd(const std::vector<double> &q)
     {
         double x = l1_*std::cos(q[0]) + l2_*std::cos(q[0] + q[1]);
@@ -60,6 +61,7 @@ private:
     /******** Variables ********/
     sensor_msgs::JointState current_joints_states_;
     sensor_msgs::JointState next_joints_states_;
+    std::vector<sensor_msgs::JointState> msg_;
     geometry_msgs::Pose2D current_waypoint_;
     std::vector<double> tf_, ta_, td_, ti_;
     std::vector<int> config_;
@@ -76,8 +78,6 @@ private:
     // Definition of frequencies and durations
     const double publishing_freq_ = 1000;
     const double publishing_duration_ = 1/publishing_freq_;
-    const double computing_freq_ = 1000;
-    const double computing_duration_ = 1/computing_freq_;
 
     // Definition of the tresholds : we consider that a number is null if it is smaller than the threshold
     const double time_threshold_ = 0.05;
@@ -96,14 +96,12 @@ private:
     // Node Handle
     ros::NodeHandle nh_;
     // Members
-    ros::Publisher publisher_;
+    ros::Publisher state_publisher_;
+    ros::Publisher trajectory_publisher_;
     ros::Subscriber state_subscriber_;
     ros::Subscriber waypoint_subscriber_;
     // Timers
     ros::Timer publishingTimer_;
-    ros::Timer computingTimer_;
-
-
 
 };
 
