@@ -5,7 +5,7 @@
  ** Calculating all the necessary for the Visual Servo Control **
  ****************************************************************/
 
-vpVelocityTwistMatrix GetRotCam(){return vpVelocityTwistMatrix(0,0,0,0,-M_PI/2,0);}  // Le repère cam dans gazebo est différent du repère caméra usuel.
+vpVelocityTwistMatrix GetRotCamToGazebo(){return vpVelocityTwistMatrix(0,0,0,0,-M_PI/2,0);}  // Le repère cam dans gazebo est différent du repère caméra usuel.
 vpVelocityTwistMatrix GetW(double offset){return vpVelocityTwistMatrix(-offset,0,0,M_PI,0,0);}
 vpVelocityTwistMatrix GetR(double q1,double q2){return vpVelocityTwistMatrix(0,0,0,0,0,-(q1+q2));}
 vpMatrix GetJac(double q1, double q2, double l1, double l2)

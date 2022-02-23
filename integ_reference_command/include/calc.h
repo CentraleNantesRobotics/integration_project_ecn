@@ -23,7 +23,7 @@
 using namespace std;
 
 //vpMatrix GetRbc(tf::TransformListener &listener);
-vpVelocityTwistMatrix GetRotCam();
+vpVelocityTwistMatrix GetRotCamToGazebo();
 vpVelocityTwistMatrix GetW(double offset);
 vpVelocityTwistMatrix GetR(double q1, double q2);
 
