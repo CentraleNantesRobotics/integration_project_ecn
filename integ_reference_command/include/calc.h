@@ -31,6 +31,6 @@ vpMatrix GetJac(double q1, double q2, double l1, double l2);
 
 std::pair<double, double> MGD(double l1, double l2, double q1, double q2);
 std::pair<double, double> MGI(double Y, double Z, double l1, double l2);
-std::pair<double, double> Deplacement(double l1, double l2, double q1, double q2,double f,auto x, auto y);
+std::pair<double, double> Deplacement(double l1, double l2, double q1, double q2,double f);//,double x, double y);
 
 #endif

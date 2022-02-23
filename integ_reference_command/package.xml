@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>reference_command</name>
+  <name>integ_reference_command</name>
   <version>0.0.1</version>
   <description>The reference_command package</description>
 

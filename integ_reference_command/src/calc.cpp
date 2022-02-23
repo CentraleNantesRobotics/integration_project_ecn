@@ -1,37 +1,13 @@
 #include <calc.h>
 #include <math.h>
 
-//vpMatrix GetRbc(tf::TransformListener &listener)
-//{
-//	vpMatrix Rbc(6, 6);
-//	tf::StampedTransform transform;
-//	listener.waitForTransform("/camera_link", "/world", ros::Time(0), ros::Duration(4.0));
-//	listener.lookupTransform("/camera_link", "/world", ros::Time(0), transform);
-//	for (int i = 0; i < 3; i++)
-//		for (int j = 0; j < 3; j++)
-//		{
-//			Rbc[i][j] = transform.getBasis()[i][j];
-//			Rbc[i + 3][j + 3] = Rbc[i][j];
-//		}
-//	return Rbc;
-//}
-vpVelocityTwistMatrix GetRotCam() // Le repère cam dans gazebo est différent du repère caméra usuel.
-{
-    return vpVelocityTwistMatrix(0,0,0,0,0,-M_PI/2);
+/****************************************************************
+ ** Calculating all the necessary for the Visual Servo Control **
+ ****************************************************************/
 
-}
-vpVelocityTwistMatrix GetW(double offset)
-{
-    return vpVelocityTwistMatrix(-offset,0,0,M_PI,0,0);
-
-}
-vpVelocityTwistMatrix GetR(double q1,double q2)
-{
-    return vpVelocityTwistMatrix(0,0,0,0,0,-(q1+q2));
-
-}
-
-
+vpVelocityTwistMatrix GetRotCam(){return vpVelocityTwistMatrix(0,0,0,0,-M_PI/2,0);}  // Le repère cam dans gazebo est différent du repère caméra usuel.
+vpVelocityTwistMatrix GetW(double offset){return vpVelocityTwistMatrix(-offset,0,0,M_PI,0,0);}
+vpVelocityTwistMatrix GetR(double q1,double q2){return vpVelocityTwistMatrix(0,0,0,0,0,-(q1+q2));}
 vpMatrix GetJac(double q1, double q2, double l1, double l2)
 {
 	vpMatrix Jac(6, 2);
@@ -50,11 +26,7 @@ vpMatrix GetJac(double q1, double q2, double l1, double l2)
 
 	return Jac;
 }
-
-std::pair<double, double> MGD(double l1, double l2, double q1, double q2)
-{
-    return {l1*cos(q1)+l2*cos(q1+q2), l1*sin(q1)+l2*sin(q1+q2)};
-}
+std::pair<double, double> MGD(double l1, double l2, double q1, double q2){return {l1*cos(q1)+l2*cos(q1+q2), l1*sin(q1)+l2*sin(q1+q2)};}
 
 std::pair<double, double> MGI(double Y, double Z, double l1, double l2)
 {
@@ -63,13 +35,30 @@ std::pair<double, double> MGI(double Y, double Z, double l1, double l2)
     return {q1d, q2d};
 }
 
-std::pair<double, double> Deplacement(double l1, double l2, double q1, double q2,double f,auto x, auto y)
-{   std::pair<double, double> Pc = MGD(l1,l2,q1,q2);
-    double Y = Pc.first - cos(q1+q2)*(x*(1+1/f))-sin(q1+q2)*(y*(1+1/f));
-    double Z = Pc.second - cos(q1+q2)*(y*(1+1/f))-sin(q1+q2)*(x*(1+1/f));
+std::pair<double, double> Deplacement(double l1, double l2, double q1, double q2,double f)//,double x, double y)
+{
+    //std::pair<double, double> Pc = MGD(l1,l2,q1,q2);
+    //double Y = Pc.first - cos(q1+q2)*(x*(1+1/f))-sin(q1+q2)*(y*(1+1/f));
+    //double Z = Pc.second - cos(q1+q2)*(y*(1+1/f))-sin(q1+q2)*(x*(1+1/f));
 
-    return {Y, Z};
+    //return {Y, Z};
+    return {0,0};
 }
 
+
+//vpMatrix GetRbc(tf::TransformListener &listener)
+//{
+//	vpMatrix Rbc(6, 6);
+//	tf::StampedTransform transform;
+//	listener.waitForTransform("/camera_link", "/world", ros::Time(0), ros::Duration(4.0));
+//	listener.lookupTransform("/camera_link", "/world", ros::Time(0), transform);
+//	for (int i = 0; i < 3; i++)
+//		for (int j = 0; j < 3; j++)
+//		{
+//			Rbc[i][j] = transform.getBasis()[i][j];
+//			Rbc[i + 3][j + 3] = Rbc[i][j];
+//		}
+//	return Rbc;
+//}
 
 using namespace std;

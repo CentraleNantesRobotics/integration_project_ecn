@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(reference_command)
+project(integ_reference_command)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_BUILD_TYPE Debug)
@@ -51,8 +51,8 @@ include_directories(
   ${VISP_INCLUDE_DIRS}
 )
 
-add_library(reference_command include/calc.h src/calc.cpp)
+add_library(reference_command include/calc.h src/calc.cpp src/main.cpp)
 target_link_libraries(reference_command ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} ${VISP_LIBRARIES})
 
-add_executable(ref_command  src/main.cpp)
-target_link_libraries(ref_command reference_command)
+#add_executable(ref_command  src/main.cpp)
+#target_link_libraries(ref_command reference_command)
