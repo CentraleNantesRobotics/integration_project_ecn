@@ -5,62 +5,85 @@
 
 //includes
 #include <cmath>
-#include <std_msgs/Float64.h>
 #include "ros/ros.h"
-
-//PID Gains
-struct Gains{
-    double Kp;
-    double Ki;
-    double Kd;
-};
+#include <std_msgs/Float64.h>
+#include <sensor_msgs/JointState.h>
 
 class CT_controller{
 public:
-    //CT_controller(double Kp1, double Ki1, double Kd1, double Kp2, double Ki2, double Kd2) : gains{{Kp1,Ki1,Kd1},{Kp2,Ki2,Kd2}}{
     CT_controller(){
 
         //Node Handle in private namespace to get parameters
         nh_private = ros::NodeHandle("~");
 
         //getting parameters
-        nh_private.param<double>("Kp1",gains[0].Kp,0);
-        nh_private.param<double>("Ki1",gains[0].Ki,0);
-        nh_private.param<double>("Kd1",gains[0].Kd,0);
+        nh_private.param<std::string>("joint_state_topic",jointStateTopic,"/state");
+        nh_private.param<std::string>("setpoint_topic",setpointTopicName,"/trajectory");
 
-        nh_private.param<double>("Kp2",gains[1].Kp,0);
-        nh_private.param<double>("Ki2",gains[1].Ki,0);
-        nh_private.param<double>("Kd2",gains[1].Kd,0);
+        nh_private.param<std::string>("first_pid_command_topic",firstPidCommandTopic,"/first_pid_command");
+        nh_private.param<std::string>("first_pid_command_topic",secondPidCommandTopic,"/second_pid_command");
 
-        nh_private.param<std::string>("trajectory_topic",trajTopic,"/trajectory");
-        nh_private.param<std::string>("command_topic",commandTopic,"/command");
+        nh_private.param<std::string>("first_joint_command_topic",firstJointCommandTopic,"/joint1_effort_controller/command");
+        nh_private.param<std::string>("second_joint_command_topic",secondJointCommandTopic,"/joint2_effort_controller/command");
 
-        //Topic you want to publish
-        commandPublisher = nh.advertise<std_msgs::Float64>(commandTopic, 10);
+        //Subscribers
+        rawJointStateSub = nh.subscribe(jointStateTopic, 10, &CT_controller::jointStateCallback, this);
+        setpointSub = nh.subscribe(setpointTopicName, 10, &CT_controller::setpointCallback, this);
 
-        //Topic you want to subscribe
-        trajSubscriber = nh.subscribe(trajTopic, 1, &CT_controller::callback, this);
+        firstPidSubscriber = nh.subscribe(firstPidCommandTopic, 10, &CT_controller::firstPidCallback, this);
+        secondPidSubscriber = nh.subscribe(secondPidCommandTopic, 10, &CT_controller::secondPidCallback, this);
+
+        //Publishers
+        firstJointCommandPub = nh.advertise<std_msgs::Float64>(firstJointCommandTopic, 10);
+        secondJointCommandPub = nh.advertise<std_msgs::Float64>(secondJointCommandTopic, 10);
+
     }
-    void callback(const std_msgs::Float64& input){
-        std::cout << "callback: " << input << "\n";
+    //Robot joint state callback
+    void jointStateCallback(const sensor_msgs::JointState& jointState_){
+        jointState = jointState_;
+        newMsgOrState = true;
+    }
+    //trajectory setpoint callback
+    void setpointCallback(const sensor_msgs::JointState& setpoint_){
+        setpoint = setpoint_;
+        newMsgOrState = true;
+    }
+    //get first PID command
+    void firstPidCallback(const std_msgs::Float64& input){
+        firstPidCommandValue = input.data;
+        newMsgOrState = true;
+    }
+    //get second PID command
+    void secondPidCallback(const std_msgs::Float64& input){
+        secondPidCommandValue = input.data;
+        newMsgOrState = true;
+    }
+    void rawJointStateCallback(const sensor_msgs::JointState& jointState){
+
     }
     void compute(){
+        if(!newMsgOrState) return;
+        //jointState, setpoint, firstPidCommandValue, secondPidCommandValue
+        //firstJointCommandPub.publish, secondJointCommandPub.publish
 
-    }
-    void publish(){
-        std_msgs::Float64 output;
-        output.data = 1.0;
-        commandPublisher.publish(output);
+        /* use M and N */
+
+        newMsgOrState = false;
     }
 private:
     //ROS Node stuff
     ros::NodeHandle nh;
     ros::NodeHandle nh_private;
-    ros::Publisher commandPublisher;
-    ros::Subscriber trajSubscriber;
+    ros::Publisher firstJointCommandPub, secondJointCommandPub;
+    ros::Subscriber setpointSub, rawJointStateSub, firstPidSubscriber, secondPidSubscriber;
     //Parameters
-    Gains gains[2];
-    std::string trajTopic, commandTopic;
+    std::string jointStateTopic, setpointTopicName,
+                firstPidCommandTopic, secondPidCommandTopic,
+                firstJointCommandTopic, secondJointCommandTopic;
+    //Values
+    sensor_msgs::JointState jointState, setpoint;
+    float firstPidCommandValue{0.0}, secondPidCommandValue{0.0};
+    bool newMsgOrState{false};
 };
 
 int main(int argc, char** argv){
@@ -72,11 +95,10 @@ int main(int argc, char** argv){
     //loop
     double f = 10; //rate frequency
     ros::Rate r(f);
+
     while (ros::ok()){
         //Compute output
         ct_controller.compute();
-        //Send command
-        ct_controller.publish();
 
         r.sleep();
         ros::spinOnce();
