@@ -3,7 +3,6 @@ from random import random
 import signal
 from subprocess import Popen
 from subprocess import check_output
-import time
 
 # OPTION ROBOTIQUE 2021-2022    PROJET INTEG     -IDENTIFICATION-                N.FRAPPEREAU & J.DELACOUX
 
@@ -23,7 +22,7 @@ def gather_data(mass_min,mass_max,inertia_min,inertia_max,r1_min,r1_max,r2_min,r
 	# ~ We hope it is a statistically complete representation of the space.                                                   .
 	# ~ 
 	# ~ 
-	data_points = 1
+	data_points = 50
 	for i in range(data_points):
 		mass_1 = round(random()*(mass_max-mass_min) + mass_min, 3)
 		mass_2 = round(random()*(mass_max-mass_min) + mass_min, 3)
@@ -35,7 +34,7 @@ def gather_data(mass_min,mass_max,inertia_min,inertia_max,r1_min,r1_max,r2_min,r
 		record_data = Popen(f'rosbag record -q -O /user/eleves/nfrapperea2019/ros/src/integration_project_ecn/integ_identification_deep/dataset/{inertia_1}-{inertia_2}-{mass_1}-{mass_2}-{com_1}-{com_2} /joint_states '.split())
 		playback_input = Popen('rosbag play -q input_data.bag'.split())
 		#attendre 4 secondes de temps de simulation, ptet que ça peut se faire en 0,5s de temps réel ??
-		time.sleep(10)   #dans le doute
+		time.sleep(6)   #dans le doute
 		#end it all
 		simulation.send_signal(signal.SIGINT)
 		record_data.send_signal(signal.SIGINT)
@@ -71,7 +70,7 @@ if __name__ == '__main__':
 	r1_max = 0.8
 	r2_min = 0.1    # minimal distance between the center of mass of link2 and the second axis of rotation (joint2)
 	r2_max = 0.6
-
+	
 	gather_data(mass_min,mass_max,inertia_min,inertia_max,r1_min,r1_max,r2_min,r2_max)
 
 
