@@ -84,6 +84,8 @@ int main(int argc, char **argv)
 
         auto qPoint = Js.pseudoInverse() * sPoint;
 
+        
+        
         //Displacement to get to the center of the target.
         std::pair<double, double> deplacement = Deplacement(l1,l2,q[0],q[1],focal, sGazebo[1], sGazebo[2]);
         // MGI to get the value of the angles.

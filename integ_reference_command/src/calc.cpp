@@ -43,7 +43,7 @@ std::pair<double, double> MGI(double Y, double Z, double l1, double l2)
     return {q1d, q2d};
 }
 
-std::pair<double, double> Deplacement(double l1, double l2, double q1, double q2,double f, const double x, const double y)//,double x, double y)
+std::pair<double, double> Deplacement(double l1, double l2, double q1, double q2,double f, const double x, const double y)
 {
     std::pair<double, double> Pc = MGD(l1,l2,q1,q2);
     double Y = Pc.first - cos(q1+q2)*(x*(1+1/f))-sin(q1+q2)*(y*(1+1/f));
@@ -51,21 +51,5 @@ std::pair<double, double> Deplacement(double l1, double l2, double q1, double q2
 
     return {Y, Z};
 }
-
-
-//vpMatrix GetRbc(tf::TransformListener &listener)
-//{
-//	vpMatrix Rbc(6, 6);
-//	tf::StampedTransform transform;
-//	listener.waitForTransform("/camera_link", "/world", ros::Time(0), ros::Duration(4.0));
-//	listener.lookupTransform("/camera_link", "/world", ros::Time(0), transform);
-//	for (int i = 0; i < 3; i++)
-//		for (int j = 0; j < 3; j++)
-//		{
-//			Rbc[i][j] = transform.getBasis()[i][j];
-//			Rbc[i + 3][j + 3] = Rbc[i][j];
-//		}
-//	return Rbc;
-//}
 
 using namespace std;
