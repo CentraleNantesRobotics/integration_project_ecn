@@ -1,0 +1,14 @@
+<launch>
+
+    <include file="$(find integ_trajectory_tracking)/launch/pid.launch">
+        <arg name="Kp1" value="5.0"/>
+        <arg name="Ki1" value="0.1"/>
+        <arg name="Kd1" value="0.1"/>
+
+        <arg name="Kp2" value="5.0"/>
+        <arg name="Ki2" value="0.1"/>
+        <arg name="Kd2" value="0.1"/>
+    </include>
+
+
+</launch>

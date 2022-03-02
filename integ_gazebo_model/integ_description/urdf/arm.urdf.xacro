@@ -32,6 +32,13 @@
   <xacro:arg name="iyy_2" default="'${(mass_2/12)*(side*side+length_2*length_2)}'"/>  
   <xacro:arg name="izz_2" default="'${(mass_2/6)*(side*side)}'"/>
   
+  <xacro:arg name="ixy_1" default="0"/>
+  <xacro:arg name="ixz_1" default="0"/>
+  <xacro:arg name="iyz_1" default="0"/> 
+  <xacro:arg name="ixy_2" default="0"/>
+  <xacro:arg name="ixz_2" default="0"/>  
+  <xacro:arg name="iyz_2" default="0"/>
+  
   <!-- we need to use a <xacro:if> </xacro:if> to use a formula as default value for an argument -->
   <xacro:property name="ixx_1_valid" value="$(arg ixx_1)"/>  
   <xacro:if value="${ixx_1_valid > 0}">  
@@ -54,6 +61,13 @@
   <xacro:property name="izz_1" value="$(arg izz_1)"/>
   <xacro:property name="iyy_2" value="$(arg iyy_2)"/>
   <xacro:property name="izz_2" value="$(arg izz_2)"/>
+  
+  <xacro:property name="ixy_1" value="$(arg ixy_1)"/>
+  <xacro:property name="ixz_1" value="$(arg ixz_1)"/>
+  <xacro:property name="iyz_1" value="$(arg iyz_1)"/>
+  <xacro:property name="ixy_2" value="$(arg ixy_2)"/>
+  <xacro:property name="ixz_2" value="$(arg ixz_2)"/>
+  <xacro:property name="iyz_2" value="$(arg iyz_2)"/>
   
   
   <xacro:arg name="com_1" default="'${length_1/2}'"/> 
@@ -100,7 +114,6 @@
 
   <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so"/>
-    <robotNamespace>/</robotNamespace>
   </gazebo>
   
 
@@ -143,11 +156,12 @@
 	 </visual>
 	 
 	 <inertial>
+		 <origin xyz="0 0 ${com_1}" rpy="0 0 0"/>		 
 		 <mass value="${mass_1}"/>
 		 <inertia ixx="${ixx_1}"
                iyy="${iyy_1}"
                izz="${izz_1}"
-               ixy="0" ixz="0" iyz="0"/>
+               ixy="${ixy_1}" ixz="${ixz_1}" iyz="${iyz_1}"/>
 	 </inertial>
 
 </link>
@@ -179,7 +193,7 @@
 		 <inertia ixx="${ixx_2}"
                iyy="${iyy_2}"
                izz="${izz_2}"
-               ixy="0" ixz="0" iyz="0"/>
+               ixy="${ixy_2}" ixz="${ixz_2}" iyz="${iyz_2}"/>
 	 </inertial>
 	 	 
   </link>
@@ -222,7 +236,7 @@
   </joint>
   
   
-  <!-- Required for ROS control -->
+  <!-- Required for ROS control, the "transmission" field enable to link a joint with an actuator -->
    
     <transmission name="shoulder_transmission">
       <type>transmission_interface/SimpleTransmission</type>

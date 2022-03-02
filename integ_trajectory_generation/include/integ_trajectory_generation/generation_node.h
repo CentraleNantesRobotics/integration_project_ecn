@@ -5,74 +5,103 @@
 #include <ros/ros.h>
 #include <ros/time.h>
 #include <vector>
+#include <iostream>
 #include <geometry_msgs/Pose2D.h>
 #include <sensor_msgs/JointState.h>
-#include <math.h>
-
-
-// Useful structure
-struct Vector2f
-{
-    float x;
-    float y;
-};
-
+#include <cmath>
+#include <stdlib.h>
 
 
 class GenerationNode
 {
 
 public:
-    // Construction
+    /******** Construction ********/
     GenerationNode();
 
-    // Callbacks
+    /******** Callbacks ********/
     void stateSubscribingCallback(const sensor_msgs::JointState&);
     void waypointSubscribingCallback(const geometry_msgs::Pose2D&);
     void publishingCallback();
     void computingCallback();
 
+    /******** Utilities ********/
+    void compute_tf();
+    void compute_ta();
+    void compute_td();
+    void compute_ti();
+    void rearrangeTimes();
+    void nextWaypoint_update();
+    bool waypointReached();
+
+    /******** MGD + MGI ********/    
+    std::vector<double> mgd(const std::vector<double> &q)
+    {
+        double x = l1_*std::cos(q[0]) + l2_*std::cos(q[0] + q[1]);
+        double y = l1_*std::sin(q[0]) + l2_*std::sin(q[0] + q[1]);
+
+        return {x, y};
+    };
+
+    std::vector<double> mgi(const geometry_msgs::Pose2D &X)
+    {
+        double q2 = std::acos((l1_*l1_ + l2_*l2_)/(2*l1_*l2_));
+        double q1 = std::atan2(X.x, X.y) - q2 ;
+
+        return {q1, q2};
+    };
 
 private:
-    // Buffer
-    std::vector<Vector2f> buffer_ ;
 
-    // Variables
-    std::vector<double> q_;
-    std::vector<double> dq_;
-    std::vector<double> ddq_;
+    /******** Buffers ********/
+    std::vector<std::vector<double>> positions_buffer_ ;
+    std::vector<std::vector<double>> velocities_buffer_;
+    std::vector<std::vector<double>> accelerations_buffer_;
+
+    /******** Variables ********/
+    sensor_msgs::JointState current_joints_states_;
+    sensor_msgs::JointState next_joints_states_;
+    std::vector<sensor_msgs::JointState> msg_;
     geometry_msgs::Pose2D current_waypoint_;
-    std::vector<sensor_msgs::JointState> current_trajectory_;
+    std::vector<double> tf_, ta_, td_, ti_;
+    std::vector<int> config_;
+    std::vector<double> vmax_temp_;
+    std::vector<double> amax_temp_;
+    double timeSinceArrival_;
 
-    // Parameters
-    double freq_;
-    double vmax1, vmax2;
-    double amax1, amax2;
+    /******** Parameters ********/
 
-    // NH
+    // Definition of arms lengths
+    const double l1_ = 0.5;
+    const double l2_ = 0.5;
+
+    // Definition of frequencies and durations
+    const double publishing_freq_ = 1000;
+    const double publishing_duration_ = 1/publishing_freq_;
+
+    // Definition of the tresholds : we consider that a number is null if it is smaller than the threshold
+    const double time_threshold_ = 0.05;
+    const double metric_threshold_  = 0.01;
+
+    // Definition of maximal velocities and accelerations
+    const std::vector<double> vmax_ = {10, 10};
+    const std::vector<double> amax_ = {10, 10};
+
+    // Definition of some constants indicating the type of the function followed by the angular speed of a joint
+    const int TRAPEZOIDAL = 0;
+    const int BANGBANG = 1;
+
+    /******** ROS Stuff ********/
+
+    // Node Handle
     ros::NodeHandle nh_;
     // Members
-    ros::Publisher publisher_;
+    ros::Publisher state_publisher_;
+    ros::Publisher trajectory_publisher_;
     ros::Subscriber state_subscriber_;
     ros::Subscriber waypoint_subscriber_;
     // Timers
     ros::Timer publishingTimer_;
-    ros::Timer computingTimer_;
-
-    // MGD + MGI
-    float l1_, l2_;
-
-    void mgd(const float &q1, const float &q2, float &x, float &y)
-    {
-        x = l1_*std::cos(q1) + l2_*std::cos(q1 + q2);
-        y = l1_*std::sin(q1) + l2_*std::sin(q1 + q2);
-    };
-
-    void mgi(const float &x, const float &y, float &q1, float &q2)
-    {
-        q2 = std::acos((l1_*l1_ + l2_*l2_)/(2*l1_*l2_));
-        q1 = std::atan2(y, x) - q2 ;
-    };
 
 };
 
