@@ -19,10 +19,10 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 set(BINNAME1 ecn_trajectory_tracking)
 
 # Set the source files to use with the executable.
-set(SRCS1 ${SRCS1}  src/CTC_controller.cpp)
+#set(SRCS1 ${SRCS1}  src/CTC_controller.cpp)
 set(SRCS2 ${SRCS2}  src/PID_controller.cpp)
 
 # Build the executable that will be used to run this node.
-add_executable(${BINNAME1} ${SRCS1} ${SRCS2})
+add_executable(${BINNAME1} ${SRCS2})
 
 target_link_libraries(${BINNAME1} ${catkin_LIBRARIES})
