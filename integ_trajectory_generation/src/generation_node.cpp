@@ -3,25 +3,29 @@
 GenerationNode::GenerationNode()
 {
     /******** Variables initialisation ********/
-    for (auto state : {current_joints_states_ , next_joints_states_}){
-        state.name = {"shoulder", "elbow"};
-        state.position = {0, 0};
-        state.velocity = {0, 0};
-        state.effort = {0, 0};
-    }
+    current_joints_states_.name = {"shoulder", "elbow"};
+    current_joints_states_.position = {0, 0};
+    current_joints_states_.velocity = {0, 0};
+    current_joints_states_.effort = {0, 0};
+
+    next_joints_states_.name = {"shoulder", "elbow"};
+    next_joints_states_.position = {0, 0};
+    next_joints_states_.velocity = {0, 0};
+    next_joints_states_.effort = {0, 0};
+
     config_ = {TRAPEZOIDAL, TRAPEZOIDAL};
     timeSinceArrival_ = 0;
     vmax_temp_ = vmax_;
     amax_temp_ = amax_;
+    dmax_temp_ = {-amax_[0], -amax_[1]};
 
     /******** ROS Stuff initialisations ********/
     state_publisher_ = nh_.advertise<sensor_msgs::JointState>("/state", 1000);
     trajectory_publisher_ = nh_.advertise<sensor_msgs::JointState>("/trajectory", 1000);
     state_subscriber_ = nh_.subscribe("/tf", 1000, &GenerationNode::stateSubscribingCallback, this);
+
     // TO DO : eventually, a waypoint subscriber...
     // waypoint_subscriber_ = nh_.subscribe("waypoints", 1000, &GenerationNode::waypointSubscribingCallback, this);
-    // TO DO : repair
-    //publishingTimer_ = nh_.createTimer(ros::Duration(publishing_duration_), &GenerationNode::publishingCallback);
 
     /******** While there are no actual subscriptions ********/
     // Waypoint
@@ -45,6 +49,7 @@ void GenerationNode::stateSubscribingCallback(const sensor_msgs::JointState& msg
     current_joints_states_.effort = msg.effort;
 }
 
+
 void GenerationNode::waypointSubscribingCallback(const geometry_msgs::Pose2D& msg)
 {
     current_waypoint_ = msg;
@@ -53,6 +58,7 @@ void GenerationNode::waypointSubscribingCallback(const geometry_msgs::Pose2D& ms
     velocities_buffer_.push_back({0, 0});
     accelerations_buffer_.push_back({0, 0});
 }
+
 
 void GenerationNode::nextWaypoint_update()
 {
@@ -68,6 +74,7 @@ void GenerationNode::nextWaypoint_update()
     // Reset time since arrival
     timeSinceArrival_ = time_threshold_;
 }
+
 
 void GenerationNode::publishingCallback()
 {

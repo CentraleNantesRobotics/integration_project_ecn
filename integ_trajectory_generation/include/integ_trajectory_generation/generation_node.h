@@ -16,6 +16,7 @@ class GenerationNode
 {
 
 public:
+
     /******** Construction ********/
     GenerationNode();
 
@@ -66,7 +67,7 @@ private:
     std::vector<double> tf_, ta_, td_, ti_;
     std::vector<int> config_;
     std::vector<double> vmax_temp_;
-    std::vector<double> amax_temp_;
+    std::vector<double> amax_temp_, dmax_temp_;
     double timeSinceArrival_;
 
     /******** Parameters ********/
@@ -100,8 +101,6 @@ private:
     ros::Publisher trajectory_publisher_;
     ros::Subscriber state_subscriber_;
     ros::Subscriber waypoint_subscriber_;
-    // Timers
-    ros::Timer publishingTimer_;
 
 };
 
