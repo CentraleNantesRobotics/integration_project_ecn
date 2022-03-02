@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(ecn_trajectory_tracking)
+project(integ_trajectory_tracking_HT)
 
 find_package(
     catkin REQUIRED COMPONENTS
@@ -16,7 +16,7 @@ catkin_package(
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 # Set the name to use for the executable.
-set(BINNAME1 ecn_trajectory_tracking)
+set(BINNAME1 ${PROJECT_NAME})
 
 # Set the source files to use with the executable.
 #set(SRCS1 ${SRCS1}  src/CTC_controller.cpp)
