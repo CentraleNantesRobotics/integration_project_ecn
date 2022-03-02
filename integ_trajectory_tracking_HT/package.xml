@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>ecn_trajectory_tracking</name>
+  <name>integ_trajectory_tracking_HT</name>
   <version>0.0.1</version>
   <description>
     Trajectory tracking for INTEG project at Ecole Centrale de Nantes.
