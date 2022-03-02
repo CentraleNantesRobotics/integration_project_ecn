@@ -8,6 +8,9 @@
         <arg name="Kp2" value="5.0"/>
         <arg name="Ki2" value="0.1"/>
         <arg name="Kd2" value="0.1"/>
+
+        <arg name="first_joint_command_topic" value="/first_pid_command"/>
+        <arg name="second_joint_command_topic" value="/second_pid_command"/>
     </include>
 
 
