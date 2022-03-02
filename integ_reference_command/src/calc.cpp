@@ -6,14 +6,14 @@
  ****************************************************************/
 
 
-vpVelocityTwistMatrix GetW(double offset){return vpVelocityTwistMatrix(-offset,0,0,M_PI,0,0);}
-vpVelocityTwistMatrix GetR(double q1,double q2){return vpVelocityTwistMatrix(0,0,0,0,0,-(q1+q2));}
-vpRotationMatrix GetRotCam3x3(){
+vpVelocityTwistMatrix GetW(){
     vpRotationMatrix RotCam3x3;
-    RotCam3x3[0][0] =  0; RotCam3x3[0][1] =  1; RotCam3x3[0][2] =  0;
-    RotCam3x3[1][0] =  0; RotCam3x3[1][1] =  0; RotCam3x3[1][2] =  1;
-    RotCam3x3[2][0] =  1; RotCam3x3[2][1] =  0; RotCam3x3[2][2] =  0;
-return RotCam3x3;}
+    RotCam3x3[0][0] =  0; RotCam3x3[0][1] =  0; RotCam3x3[0][2] =  1;
+    RotCam3x3[1][0] =  -1; RotCam3x3[1][1] =  0; RotCam3x3[1][2] =  0;
+    RotCam3x3[2][0] =  0; RotCam3x3[2][1] =  -1; RotCam3x3[2][2] =  0;
+    return vpVelocityTwistMatrix(RotCam3x3);}
+vpVelocityTwistMatrix GetR(double q1,double q2){return vpVelocityTwistMatrix(0,0,0,-(q1+q2),0,0);}
+
 vpVelocityTwistMatrix GetRotCamToGazebo(vpRotationMatrix &R){return vpVelocityTwistMatrix(R);}  // Le repère cam dans gazebo est différent du repère caméra usuel.
 
 vpMatrix GetJac(double q1, double q2, double l1, double l2)
@@ -25,12 +25,12 @@ vpMatrix GetJac(double q1, double q2, double l1, double l2)
 	double s12 = sin(q1 + q2);
 	double c12 = cos(q1 + q2);
 
-    Jac[0][0] = -1 * l1 * s1 - l2 * s12;
-    Jac[0][1] = -1 * l2 * s12;
-    Jac[1][0] = l1 * c1 + l2 * c12;
-    Jac[1][1] = l2 * c12;
-    Jac[5][0] = 1;
-    Jac[5][1] = 1;
+    Jac[1][0] = -1 * l1 * s1 - l2 * s12;
+    Jac[1][1] = -1 * l2 * s12;
+    Jac[2][0] = l1 * c1 + l2 * c12;
+    Jac[2][1] = l2 * c12;
+    Jac[3][0] = 1;
+    Jac[3][1] = 1;
 
 	return Jac;
 }
