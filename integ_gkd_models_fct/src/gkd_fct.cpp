@@ -6,7 +6,7 @@
 #include <integ_gkd_models_fct/dyn_mats.h>
 #include <visp/vpMatrix.h>
 
-int Dynamic(sensor_msgs::JointState req){
+integ_gkd_models_fct::dyn_mats Dynamic(sensor_msgs::JointState req){
 
     YAML::Node lconf = YAML::LoadFile("RobotParam.yml");
     auto l1 = lconf["l1"].as<double>();
@@ -49,5 +49,5 @@ int Dynamic(sensor_msgs::JointState req){
     output.m_coeffs = { Z1 , Z2 , Z2 , Z3 };
     output.n_coeffs = {N[1][1], N[2][1]};
 
-    return(0);
+    return(output);
 };
