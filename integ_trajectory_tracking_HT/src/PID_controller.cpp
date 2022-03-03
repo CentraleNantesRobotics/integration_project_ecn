@@ -41,6 +41,7 @@ int main (int argc, char** argv)
     // subscriber Trajectoire
     ros::Subscriber robot_trajectory_sub = nh.subscribe ("/trajectory", 10, robot_trajectoryCallback); //trajectory
 
+
     // publisher effort q1
     ros::Publisher torque1_publisher = nh.advertise<std_msgs::Float64>("/joint1_effort_controller/command", 10);
 
@@ -88,10 +89,9 @@ int main (int argc, char** argv)
         torque1_publisher.publish(torque_q1_command);
         torque2_publisher.publish(torque_q2_command);
 
-        ros::spin();
+        ros::spinOnce();
         rate.sleep();
-	}
+    }
     return 0;
-    
 }
 
