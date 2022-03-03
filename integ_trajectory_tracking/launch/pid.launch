@@ -7,20 +7,20 @@
     <arg name="Ki2" default="0.1"/>
     <arg name="Kd2" default="0.1"/>
 
-    <arg name="raw_joint_state_topic_name" default="/state"/>
-    <arg name="raw_setpoint_topic_name" default="/trajectory"/>
+    <arg name="raw_joint_state_topic_name" default="/state"/> <!-- Robot State topic name -->
+    <arg name="raw_setpoint_topic_name" default="/trajectory"/> <!-- Setpoint topic name -->
 
     <arg name="first_joint_state_topic" default="first_joint_state"/>
     <arg name="first_joint_dstate_topic" default="first_joint_dstate"/>
     <arg name="first_joint_setpoint_topic" default="first_joint_setpoint"/>
     <arg name="first_joint_dsetpoint_topic" default="first_joint_dsetpoint"/>
-    <arg name="first_joint_command_topic" default="/joint1_effor_controller/command"/>
+    <arg name="first_joint_command_topic" default="/joint1_effor_controller/command"/> <!-- first PID output topic name -->
 
     <arg name="second_joint_state_topic" default="second_joint_state"/>
     <arg name="second_joint_dstate_topic" default="second_joint_dstate"/>
     <arg name="second_joint_setpoint_topic" default="second_joint_setpoint"/>
     <arg name="second_joint_dsetpoint_topic" default="second_joint_dsetpoint"/>
-    <arg name="second_joint_command_topic" default="/joint2_effor_controller/command"/>
+    <arg name="second_joint_command_topic" default="/joint2_effor_controller/command"/> <!-- second PID output topic name -->
 
     <!-- NODES -->
     <group ns="controllers">

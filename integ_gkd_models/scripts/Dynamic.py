@@ -40,7 +40,7 @@ def handle_Dynamic(req):
 	theta_d = req.input.velocity
 	theta_d_d = req.input.effort
 
-	Z1 = m1*c1**2 + m2*(l1**2+c2**2+l1*l2*cos(theta[1]) + Iz1 + Iz2
+	Z1 = m1*c1**2 + m2*(l1**2+c2**2+l1*l2*cos(theta[1])) + Iz1 + Iz2
 	Z2 = m2*(c2**2+l1*c2*cos(theta[1])) + Iz2
 	Z3 = m2*c2**2 + Iz2
 	Z4 = m2*c2*g*cos(theta[0]+theta[1])
