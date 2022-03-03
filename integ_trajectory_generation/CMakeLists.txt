@@ -18,7 +18,7 @@ catkin_package(
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 # Set the name to use for the executable.
-set(BINNAME1 integ_trajectory_generation)
+set(BINNAME1 ${PROJECT_NAME})
 
 # Set the source files to use with the executable.
 set(SRCS1 ${SRCS1}  src/generation_main.cpp

@@ -1,21 +1,97 @@
 /* -------------------------------------------------------------------
- * This document is an utility document, which gathers several utility
+ * This file is an utility document, which gathers several utility
  * functions needed for integ_trajectory_generation project.
+ *
+ * Two basic functions are presented, followed by the remaining
+ * member functions declared in genereation_node.h.
  * -------------------------------------------------------------------*/
+
 
 #include <integ_trajectory_generation/generation_node.h>
 
 
-/* This function calculates the vector tf of respective time needed by each joint to reach it's goal angle, using the trapezoidal
- * definition of the angular speed or the bang-bang definition if the joint does not need to move enough.
+/* This function subtracts two vectors, value by value.
  *
- * Inputs : - max angular speed of the joint vmax
- *          - max angular acceleration of the joint amax
- *          - angular speed at the starting point dqa
- *          - angular speed at the goal point dqb
- *          - angle of the starting point qa
- *          - angle of the goal point qb
- * Output : vector tf of respective time needed by each joint to reach it's goal angle   */
+ * Inputs   : two vectors
+ *
+ * Output   : the vector of their substraction.            */
+
+std::vector<double> substractVectors(const std::vector<double> &vec1, const std::vector<double> &vec2){
+    std::vector<double> vecSub;
+
+    if (vec1.size()==vec2.size()){
+        for (int i=0; i<int(vec1.size()); i++){
+            vecSub[i] = vec1[i] - vec2[i];
+        }
+    } else {
+        std::cout << "Erreur dans les dimensions de vecteur" << std::endl;
+    }
+
+    return vecSub;
+}
+
+
+
+/* This function finds the index corresponding to an element in a vector
+ *
+ * Inputs : - element looked for
+ *          - vector analysed
+ * Output : the index corresponding to this element or the size of the vector if it wasn't found */
+
+int findIndex(const std::string &name, const std::vector<std::string> & names)
+{
+  const auto elem = std::find(names.begin(), names.end(), name);
+  return std::distance(names.begin(), elem);
+}
+
+
+
+/* This function determines the dgm of the robot.
+ *
+ * Input    :   - a vector of two given joints positions
+ *              - respective lengths of arms
+ *
+ * Output   :   the (x,y) position of the effector in this configuration       */
+
+std::vector<double> GenerationNode::mgd(const std::vector<double> &q)
+{
+    double x = l1_*std::cos(q[0]) + l2_*std::cos(q[0] + q[1]);
+    double y = l1_*std::sin(q[0]) + l2_*std::sin(q[0] + q[1]);
+
+    return {x, y};
+};
+
+
+
+/* This function determines the igm of the robot.
+ *
+ * Input    :   - a 2D Pose of the effector
+ *              - respective lenghts of arms
+ *
+ * Output   :   the joints position necessary to achieve this configuration        */
+
+std::vector<double> GenerationNode::mgi(const geometry_msgs::Pose2D &X)
+{
+    double q2 = std::acos((l1_*l1_ + l2_*l2_)/(2*l1_*l2_));
+    double q1 = std::atan2(X.x, X.y) - q2 ;
+
+    return {q1, q2};
+};
+
+
+
+/* This function calculates the vector tf of respective time needed by each joint to reach it's goal angle,
+ * using the trapezoidal definition of the angular speed or the bang-bang definition if the joint does not
+ * need to move enough.
+ *
+ * Inputs   :   - max angular speed of the joint vmax
+ *              - max angular acceleration of the joint amax
+ *              - angular speed at the starting point dqa
+ *              - angular speed at the goal point dqb
+ *              - angle of the starting point qa
+ *              - angle of the goal point qb
+ *
+ * Output   :   vector tf of respective time needed by each joint to reach it's goal angle   */
 
 void GenerationNode::compute_tf()
 {
@@ -28,6 +104,7 @@ void GenerationNode::compute_tf()
         const double qb = positions_buffer_[0][i];
         const double dqa = current_joints_states_.velocity[i];
         const double dqb = velocities_buffer_[0][i];
+        // Might be used at some point
         // const double ddqa = current_joints_states_.effort[i];
         // const double ddqb = accelerations_buffer_[0][i];
 
@@ -50,13 +127,14 @@ void GenerationNode::compute_tf()
 
 
 
-
-/* This function calculates the vector ta of respective duration of acceleration for each joint in a trapezoidal configuration.
+/* This function calculates the vector ta of respective duration of acceleration for each joint in a
+ * trapezoidal configuration.
  *
- * Inputs : - max angular speed of the joint vmaxq1
- *          - max angular acceleration of the joint amax
- *          - angular speed at the starting point dqa
- * Output : vector ta of respective duration of acceleration for each joint in a trapezoidal configuration */
+ * Inputs   :   - max angular speed of the joint vmaxq1
+ *              - max angular acceleration of the joint amax
+ *              - angular speed at the starting point dqa
+ *
+ * Output   :   vector ta of respective duration of acceleration for each joint in a trapezoidal configuration */
 
 void GenerationNode::compute_ta()
 {
@@ -79,13 +157,14 @@ void GenerationNode::compute_ta()
 
 
 
-
-/* This function calculates the vector td of respective duration until deceleration for each joint in a trapezoidal configuration.
+/* This function calculates the vector td of respective duration until deceleration for each joint
+ * in a trapezoidal configuration.
  *
- * Inputs : - max angular speed of the joint vmax
- *          - max angular acceleration of the joint amax
- *          - angular speed at the goal point dqb
- * Output : vector td of respective duration until deceleration for each joint in a trapezoidal configuration   */
+ * Inputs   :   - max angular speed of the joint vmax
+ *              - max angular acceleration of the joint amax
+ *              - angular speed at the goal point dqb
+ *
+ * Output   :   vector td of respective duration until deceleration for each joint in a trapezoidal configuration   */
 
 void GenerationNode::compute_td()
 {
@@ -110,14 +189,16 @@ void GenerationNode::compute_td()
 
 
 
-/* This function calculates the vector ti of respective duration of acceleration ti for a bang-bang configuration.
+/* This function calculates the vector ti of respective duration of acceleration ti for a
+ * bang-bang configuration.
  *
- * Inputs : - max angular speed of the joint vmax
- *          - max angular acceleration of the joint amax
- *          - angular speed at the starting point dqa
- *          - angular speed at the goal point dqb
- *          - total time needed for the movemement tf
- * Output : duration of acceleration ti for a bang-bang configuration   */
+ * Inputs   :   - max angular speed of the joint vmax
+ *              - max angular acceleration of the joint amax
+ *              - angular speed at the starting point dqa
+ *              - angular speed at the goal point dqb
+ *              - total time needed for the movemement tf
+ *
+ * Output   :   vector ti of respective duration of acceleration    */
 
 void GenerationNode::compute_ti()
 {
@@ -142,37 +223,18 @@ void GenerationNode::compute_ti()
 
 
 
-/* This function subtracts two vectors, value by value.
+/* This function rearranges the tf, ta, td, and ti vectors and modifies the maximum acceleration and
+ * velocity vectors accordingly.
  *
- * Inputs : two vectors
- * Output : the vector of their substraction.            */
-
-std::vector<double> substractVectors(const std::vector<double> &vec1, const std::vector<double> &vec2){
-    std::vector<double> vecSub;
-
-    if (vec1.size()==vec2.size()){
-        for (int i=0; i<int(vec1.size()); i++){
-            vecSub[i] = vec1[i] - vec2[i];
-        }
-    } else {
-        std::cout << "Erreur dans les dimensions de vecteur" << std::endl;
-    }
-
-    return vecSub;
-}
-
-
-
-/* This function rearranges the tf, ta, td, and ti vectors and modifies the maximum acceleration and velocity vectors accordingly.
+ * Inputs   :   - max angular speed of the joint vmax
+ *              - max angular acceleration of the joint amax
+ *              - angular speed at the starting point dqa
+ *              - angular speed at the goal point dqb
+ *              - total time needed for the movemement tf
  *
- * Inputs : - max angular speed of the joint vmax
- *          - max angular acceleration of the joint amax
- *          - angular speed at the starting point dqa
- *          - angular speed at the goal point dqb
- *          - total time needed for the movemement tf
- * Output : - rearranged times
- *          - modified max accelerations
- *          - modified max velocities */
+ * Outputs   :  - rearranged times
+ *              - modified max accelerations
+ *              - modified max velocities */
 
 void GenerationNode::rearrangeTimes()
 {
@@ -239,10 +301,11 @@ void GenerationNode::rearrangeTimes()
 
 /* This function indicates if the next waypoint has been reached.
  *
- * Inputs : - current joints states
- *          - current waypoint
- *          - metric threshold
- * Output : true if the waypoint is reached, false otherwise   */
+ * Inputs   :   - current joints states
+ *              - current waypoint
+ *              - metric threshold
+ *
+ * Output   :   true if the waypoint is reached, false otherwise   */
 
 bool GenerationNode::waypointReached()
 {
@@ -253,10 +316,12 @@ bool GenerationNode::waypointReached()
 }
 
 
+
 /* This function removes the first element of the member buffers.
  *
- * Inputs : said buffers
- * Output : modified buffers                                   */
+ * Inputs    :    said buffers
+ *
+ * Outputs   :    modified buffers                                     */
 
 void GenerationNode::popBuffers()
 {
@@ -266,26 +331,15 @@ void GenerationNode::popBuffers()
 }
 
 
-/* This function finds the index corresponding to an element in a vector
- *
- * Inputs : - element looked for
- *          - vector analysed
- * Output : the index corresponding to this element or the size of the vector if it wasn't found */
-
-int GenerationNode::findIndex(const std::string &name, const std::vector<std::string> & names)
-{
-  const auto elem = std::find(names.begin(), names.end(), name);
-  return std::distance(names.begin(), elem);
-}
-
 
 /* This function computes the next joints states according to the configurations and the various vectors.
  *
- * Inputs : - current joint states
- *          - rearranged times
- *          - modified max accelerations
- *          - modified max velocities
- * Output : next_joints_states   */
+ * Inputs   :   - current joint states
+ *              - rearranged times
+ *              - modified max accelerations
+ *              - modified max velocities
+ *
+ * Output   :   next_joints_states   */
 
 void GenerationNode::computingCallback()
 {
@@ -336,7 +390,7 @@ void GenerationNode::computingCallback()
 
     } else {
 
-        std::cout << "Odd" << std::endl;
+        std::cout << "Odd, the single BANGBANG should've been turned into a TRAPEZOIDAL beforehand." << std::endl;
 
     }
 }

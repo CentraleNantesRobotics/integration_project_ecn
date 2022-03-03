@@ -1,3 +1,9 @@
+/* -------------------------------------------------------------------
+ * This file serves as the main file for the generation of
+ * trajectories. It holds only the main function, which is pretty
+ * classic for a ros project.
+ * -------------------------------------------------------------------*/
+
 #ifndef GENERATION_NODE_H
 #define GENERATION_NODE_H
 
@@ -20,39 +26,26 @@ public:
     /******** Construction ********/
     GenerationNode();
 
+
     /******** Callbacks ********/
     void stateSubscribingCallback(const sensor_msgs::JointState&);
     void waypointSubscribingCallback(const geometry_msgs::Pose2D&);
     void publishingCallback();
     void computingCallback();
 
+
     /******** Utilities ********/
+    std::vector<double> mgd(const std::vector<double>&);
+    std::vector<double> mgi(const geometry_msgs::Pose2D&);
     void compute_tf();
     void compute_ta();
     void compute_td();
     void compute_ti();
     void rearrangeTimes();
-    void nextWaypoint_update();
     bool waypointReached();
     void popBuffers();
-    int findIndex(const std::string& , const std::vector<std::string>& );
+    void nextWaypoint_update();
 
-    /******** MGD + MGI ********/    
-    std::vector<double> mgd(const std::vector<double> &q)
-    {
-        double x = l1_*std::cos(q[0]) + l2_*std::cos(q[0] + q[1]);
-        double y = l1_*std::sin(q[0]) + l2_*std::sin(q[0] + q[1]);
-
-        return {x, y};
-    };
-
-    std::vector<double> mgi(const geometry_msgs::Pose2D &X)
-    {
-        double q2 = std::acos((l1_*l1_ + l2_*l2_)/(2*l1_*l2_));
-        double q1 = std::atan2(X.x, X.y) - q2 ;
-
-        return {q1, q2};
-    };
 
 private:
 
@@ -61,17 +54,20 @@ private:
     std::vector<std::vector<double>> velocities_buffer_;
     std::vector<std::vector<double>> accelerations_buffer_;
 
-    /******** Variables ********/
+
+    /******** Variables and their initial value ********/
     sensor_msgs::JointState current_joints_states_;
     sensor_msgs::JointState next_joints_states_;
     std::vector<sensor_msgs::JointState> msg_;
     geometry_msgs::Pose2D current_waypoint_;
     std::vector<double> tf_, ta_, td_, ti_;
-    std::vector<int> config_;
-    std::vector<double> vmax_temp_;
-    std::vector<double> amax_temp_, dmax_temp_;
-    double timeSinceArrival_;
-    bool joint_state_received = false;
+    std::vector<int> config_ = {TRAPEZOIDAL, TRAPEZOIDAL};
+    std::vector<double> vmax_temp_ = vmax_;
+    std::vector<double> amax_temp_ = amax_;
+    std::vector<double> dmax_temp_ = {-amax_[0], -amax_[1]};
+    double timeSinceArrival_ = time_threshold_;
+    bool joints_states_init = false;
+
 
     /******** Parameters ********/
 
@@ -79,10 +75,12 @@ private:
     const double l1_ = 0.8;
     const double l2_ = 0.6;
 
+public :
     // Definition of frequencies and durations
     const double publishing_freq_ = 100;
     const double publishing_duration_ = 1/publishing_freq_;
 
+private:
     // Definition of the tresholds : we consider that a number is null if it is smaller than the threshold
     const double time_threshold_ = 0.05;
     const double metric_threshold_  = 0.01;
@@ -95,10 +93,12 @@ private:
     const int TRAPEZOIDAL = 0;
     const int BANGBANG = 1;
 
+
     /******** ROS Stuff ********/
 
     // Node Handle
     ros::NodeHandle nh_;
+
     // Members
     ros::Publisher state_publisher_;
     ros::Publisher trajectory_publisher_;
@@ -106,6 +106,11 @@ private:
     ros::Subscriber waypoint_subscriber_;
 
 };
+
+
+// Other basic functions that aren't inherent to the GeneratioNode class
+int findIndex(const std::string& , const std::vector<std::string>&);
+std::vector<double> substractVectors(const std::vector<double>&, const std::vector<double>&);
 
 #endif // GENERATION_NODE_H
 

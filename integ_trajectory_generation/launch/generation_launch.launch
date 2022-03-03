@@ -1,8 +1,21 @@
 <?xml version="1.0"?>
 
 <launch>
+	
+	<!-- Very simple launch file allowing to test the links between gazebo, trajectory_generation and
+	trajectory_tracking -->
+	
+	<include file="$(find integ_gazebo)/launch/arm.launch"/>
+	
+	<!-- 	name corresponds to the name that will appear in the rqt_graph
+			pkg corresponds to the pkg name
+			type seems to corresponds to the name of the executable precised in the CMakeLists.txt		-->
+			
+	<node name="trajectory_generation" pkg="integ_trajectory_generation" type="integ_trajectory_generation"/>
+  
+	<node name="trajectory_tracking" pkg="integ_trajectory_tracking_HT" type= "integ_trajectory_tracking_HT"/>
+  
 
-<node name = "generation_main" pkg = "integ_trajectory_generation" />
-
+  
 </launch>
 

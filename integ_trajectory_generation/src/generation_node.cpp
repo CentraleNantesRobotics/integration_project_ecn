@@ -1,8 +1,18 @@
+/* -------------------------------------------------------------------
+ * This file defines the most important functions defined in the
+ * generation_node header file :
+ *      - the constructor
+ *      - the subscribing callbacks
+ *      - the publishing callback
+ * -------------------------------------------------------------------*/
+
+
 #include <integ_trajectory_generation/generation_node.h>
+
 
 GenerationNode::GenerationNode()
 {
-    /******** Variables initialisation ********/
+    /******** Vectors variable initialisation ********/
     for (auto state : {&current_joints_states_, &next_joints_states_}){
         state->name = {"elbow", "shoulder"};
         state->position.resize(2);
@@ -10,14 +20,8 @@ GenerationNode::GenerationNode()
         state->effort.resize(2);
     }
 
-    config_ = {TRAPEZOIDAL, TRAPEZOIDAL};
-    timeSinceArrival_ = 0;
-    vmax_temp_ = vmax_;
-    amax_temp_ = amax_;
-    dmax_temp_ = {-amax_[0], -amax_[1]};
-
-    for (auto time: {&tf_, &ta_, &td_, &ti_}){
-        time->resize(2);
+    for (auto tvec: {&tf_, &ta_, &td_, &ti_}){
+        tvec->resize(2);
     }
 
 
@@ -26,6 +30,7 @@ GenerationNode::GenerationNode()
     trajectory_publisher_ = nh_.advertise<sensor_msgs::JointState>("/trajectory", 1000);
     state_subscriber_ = nh_.subscribe("/joint_states", 1000, &GenerationNode::stateSubscribingCallback, this);
     waypoint_subscriber_ = nh_.subscribe("waypoints", 1000, &GenerationNode::waypointSubscribingCallback, this);
+
 
     /******** While there are no actual waypoint subscriptions ********/
     // Waypoint
@@ -39,30 +44,36 @@ GenerationNode::GenerationNode()
 
 }
 
+
+
 void GenerationNode::stateSubscribingCallback(const sensor_msgs::JointState& msg)
 {
     for(int i = 0; i < 2; i++)
     {
-        const int idx{findIndex(current_joints_states_.name[i], msg.name)};
-
-        current_joints_states_.position[i] = msg.position[idx];
-        current_joints_states_.velocity[i] = msg.velocity[idx];
-        current_joints_states_.effort[i] = msg.effort[idx];
+        const int index{findIndex(current_joints_states_.name[i], msg.name)};
+        current_joints_states_.position[i] = msg.position[index];
+        current_joints_states_.velocity[i] = msg.velocity[index];
+        current_joints_states_.effort[i] = msg.effort[index];
     }
 
-    if (!joint_state_received)
-        joint_state_received = true;
+    if (!joints_states_init) {joints_states_init = true;}
 }
+
 
 
 void GenerationNode::waypointSubscribingCallback(const geometry_msgs::Pose2D& msg)
 {
-    // Might change but for now we want a null velocity and acceleration when arriving at each waypoint
     current_waypoint_ = msg;
-    positions_buffer_.push_back(mgi(current_waypoint_));
-    velocities_buffer_.push_back({0, 0});
-    accelerations_buffer_.push_back({0, 0});
+
+    /* Commented while there are no actual waypoint subscriptions.
+     * Also, it might change but for now we want a null velocity and acceleration when arriving at
+     * each waypoint.                                                                              */
+
+    //positions_buffer_.push_back(mgi(current_waypoint_));
+    //velocities_buffer_.push_back({0, 0});
+    //accelerations_buffer_.push_back({0, 0});
 }
+
 
 
 void GenerationNode::nextWaypoint_update()
@@ -81,9 +92,11 @@ void GenerationNode::nextWaypoint_update()
 }
 
 
+
 void GenerationNode::publishingCallback()
 { 
-    if (joint_state_received){
+    // Checks if the joints_states were initialized
+    if (joints_states_init){
 
         if (positions_buffer_.size() == 0) {
             // No waypoint was given
@@ -98,7 +111,7 @@ void GenerationNode::publishingCallback()
                 timeSinceArrival_ = time_threshold_;
 
             } else {
-                // There is another one
+                // There is at least one other waypoint left
                 popBuffers();
                 nextWaypoint_update();
                 computingCallback();
@@ -106,7 +119,7 @@ void GenerationNode::publishingCallback()
             }
 
         } else {
-            // 'Normal' situation
+            // The robot is moving toward its next waypoint
             timeSinceArrival_ += publishing_duration_;
             computingCallback();
         }
