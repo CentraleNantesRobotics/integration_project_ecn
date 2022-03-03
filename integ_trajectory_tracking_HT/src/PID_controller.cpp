@@ -88,7 +88,7 @@ int main (int argc, char** argv)
         torque1_publisher.publish(torque_q1_command);
         torque2_publisher.publish(torque_q2_command);
 
-        ros::spinOnce();
+        ros::spin();
         rate.sleep();
 
     return 0;
