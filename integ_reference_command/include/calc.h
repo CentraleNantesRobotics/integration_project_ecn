@@ -30,8 +30,8 @@ vpVelocityTwistMatrix GetR(double q1, double q2);
 
 vpMatrix GetJac(double q1, double q2, double l1, double l2);
 
-std::pair<double, double> MGD(double l1, double l2, double q1, double q2);
-std::pair<double, double> MGI(double Y, double Z, double l1, double l2);
-std::pair<double, double> Deplacement(double l1, double l2, double q1, double q2,double f, const double x, const double y);//,double x, double y);
+//std::pair<double, double> MGD(double l1, double l2, double q1, double q2);
+//std::pair<double, double> MGI(double Y, double Z, double l1, double l2);
+//std::pair<double, double> Deplacement(double l1, double l2, double q1, double q2,double f, const double x, const double y);//,double x, double y);
 
 #endif

@@ -57,5 +57,5 @@ target_link_libraries(reference_command ${catkin_LIBRARIES} ${OpenCV_LIBRARIES} 
 add_executable(ref_command  src/main.cpp)
 target_link_libraries(ref_command reference_command)
 
-#add_executable(trajectory_simulation  src/main.cpp)
-#target_link_libraries(trajectory_simulation trajectory_sim)
+add_executable(simulation_trajectory  src/simulation_trajectory.cpp)
+target_link_libraries(simulation_trajectory reference_command)
