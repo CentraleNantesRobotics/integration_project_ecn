@@ -1,18 +1,97 @@
 <launch>
-    <arg name="Kp1" default="1"/>
-    <arg name="Ki1" default="1"/>
-    <arg name="Kd1" default="1"/>
+    <arg name="Kp1" default="5.0"/>
+    <arg name="Ki1" default="0.1"/>
+    <arg name="Kd1" default="0.1"/>
 
-    <arg name="Kp2" default="1"/>
-    <arg name="Ki2" default="1"/>
-    <arg name="Kd2" default="1"/>
-    
+    <arg name="Kp2" default="5.0"/>
+    <arg name="Ki2" default="0.1"/>
+    <arg name="Kd2" default="0.1"/>
+
+    <arg name="raw_joint_state_topic_name" default="/state"/>
+    <arg name="raw_setpoint_topic_name" default="/trajectory"/>
+
+    <arg name="first_joint_state_topic" default="first_joint_state"/>
+    <arg name="first_joint_dstate_topic" default="first_joint_dstate"/>
+    <arg name="first_joint_setpoint_topic" default="first_joint_setpoint"/>
+    <arg name="first_joint_dsetpoint_topic" default="first_joint_dsetpoint"/>
+    <arg name="first_joint_command_topic" default="/joint1_effor_controller/command"/>
+
+    <arg name="second_joint_state_topic" default="second_joint_state"/>
+    <arg name="second_joint_dstate_topic" default="second_joint_dstate"/>
+    <arg name="second_joint_setpoint_topic" default="second_joint_setpoint"/>
+    <arg name="second_joint_dsetpoint_topic" default="second_joint_dsetpoint"/>
+    <arg name="second_joint_command_topic" default="/joint2_effor_controller/command"/>
 
     <!-- NODES -->
+    <group ns="controllers">
+        <!--
+        The default cutoff frequency is 1/4 of the sampling rate.
+        If you prefer not to filter the signal anyway, just set a very high cutoff frequency (like 10,000).
+        -->
+        <node name="first_joint_splitter" pkg="integ_trajectory_tracking" type="splitter" output="screen" >
+            <param name="raw_joint_state_topic_name" value="$(arg raw_joint_state_topic_name)"/>
+            <param name="raw_setpoint_topic_name" value="$(arg raw_setpoint_topic_name)"/>
+            <param name="single_state_topic_name" value="$(arg first_joint_state_topic)"/>
+            <param name="single_dstate_topic_name" value="$(arg first_joint_dstate_topic)"/>
+            <param name="single_setpoint_topic_name" value="$(arg first_joint_setpoint_topic)"/>
+            <param name="single_dsetpoint_topic_name" value="$(arg first_joint_dsetpoint_topic)"/>
+            <param name="joint_name_to_remap" value="/elbow"/>
+        </node>
 
-    <node name="pid_node"  pkg="integ_trajectory_tracking"  type="pid_controller" output="screen" required="true">
-        <param name="Kp1" value="$(arg Kp1)"/>
-        <param name="trajectory_topic" value="/trajectory"/>
-    </node>
 
+        <node name="first_joint_controller" pkg="integ_trajectory_tracking" type="pid_controller" output="screen" >
+            
+            <param name="topic_from_plant" value="$(arg first_joint_state_topic)"/>
+            <param name="topic_from_dplant" value="$(arg first_joint_dstate_topic)"/>
+            <param name="setpoint_topic" value="$(arg first_joint_setpoint_topic)"/>
+            <param name="dsetpoint_topic" value="$(arg first_joint_dsetpoint_topic)"/>
+            <param name="topic_from_controller" value="$(arg first_joint_command_topic)"/>
+            <param name="d_input_enable" value="true"/>
+            
+
+            <param name="Kp" value="$(arg Kp1)" />
+            <param name="Ki" value="$(arg Ki1)" />
+            <param name="Kd" value="$(arg Kd1)" />
+            <param name="upper_limit" value="10" />
+            <param name="lower_limit" value="-10" />
+            <param name="windup_limit" value="10" />
+            <param name="cutoff_frequency" value="20" />
+            <param name="max_loop_frequency" value="105.0" />
+            <param name="min_loop_frequency" value="95.0" />
+            <param name="setpoint_timeout" value="-1.0" />
+        </node>
+
+
+        <node name="second_joint_splitter" pkg="integ_trajectory_tracking" type="splitter" output="screen" >
+            <param name="raw_joint_state_topic_name" value="$(arg raw_joint_state_topic_name)"/>
+            <param name="raw_setpoint_topic_name" value="$(arg raw_setpoint_topic_name)"/>
+            <param name="single_state_topic_name" value="$(arg second_joint_state_topic)"/>
+            <param name="single_dstate_topic_name" value="$(arg second_joint_dstate_topic)"/>
+            <param name="single_setpoint_topic_name" value="$(arg second_joint_setpoint_topic)"/>
+            <param name="single_dsetpoint_topic_name" value="$(arg second_joint_dsetpoint_topic)"/>
+            <param name="joint_name_to_remap" value="/elbow"/>
+        </node>
+
+        <node name="second_joint_controller" pkg="integ_trajectory_tracking" type="pid_controller" output="screen" >
+            
+            <param name="topic_from_plant" value="$(arg second_joint_state_topic)"/>
+            <param name="topic_from_dplant" value="$(arg second_joint_dstate_topic)"/>
+            <param name="setpoint_topic" value="$(arg second_joint_setpoint_topic)"/>
+            <param name="dsetpoint_topic" value="$(arg second_joint_dsetpoint_topic)"/>
+            <param name="topic_from_controller" value="$(arg second_joint_command_topic)"/>
+            <param name="d_input_enable" value="true"/>
+            
+
+            <param name="Kp" value="$(arg Kp2)" />
+            <param name="Ki" value="$(arg Ki2)" />
+            <param name="Kd" value="$(arg Kd2)" />
+            <param name="upper_limit" value="10" />
+            <param name="lower_limit" value="-10" />
+            <param name="windup_limit" value="10" />
+            <param name="cutoff_frequency" value="20" />
+            <param name="max_loop_frequency" value="105.0" />
+            <param name="min_loop_frequency" value="95.0" />
+            <param name="setpoint_timeout" value="-1.0" />
+        </node>
+    </group>
 </launch>
