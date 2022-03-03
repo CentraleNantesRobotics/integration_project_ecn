@@ -8,7 +8,7 @@ import os.path
 
 from math import cos, sin
 from sensor_msgs.msg import JointState
-from gkd_models.srv import Dynamic_inverse,Dynamic_inverseResponse
+from integ_gkd_models.srv import Dynamic_inverse,Dynamic_inverseResponse
 
 path=os.path.dirname(__file__)
 
@@ -29,12 +29,12 @@ def handle_Dynamic_inverse(req):
 	theta_d = req.input.velocity
 	efforts = req.input.effort
 	
-	Z1 = m1*c1**2 + m2*(l1**2+c2**2+l1*l2*cos(theta[1]) + Iz1 + Iz2
+	Z1 = m1*c1**2 + m2*(l1**2+c2**2+2*l1*c2*cos(theta[1])) + Iz1 + Iz2
 	Z2 = m2*(c2**2+l1*c2*cos(theta[1])) + Iz2
 	Z3 = m2*c2**2 + Iz2
-	Z4 = m2*c2*g*cos(theta[0]+theta[1])
-	Z5 = m2*c2*g*cos(theta[0]+theta[1])+(m1*c2+m2*l1)*g*cos(theta[0])
-	h = -0.5*m2*l1*l2*sin(theta[1])
+	Z4 = m2*c2*g*cos(theta[0]+theta[1])+(m1*c1+m2*l1)*g*cos(theta[0])
+	Z5 = m2*c2*g*cos(theta[0]+theta[1])
+	h = -m2*l1*c2*sin(theta[1])
 	
 	D=[[ Z1 , Z2 ],[ Z2 , Z3 ]]
 	

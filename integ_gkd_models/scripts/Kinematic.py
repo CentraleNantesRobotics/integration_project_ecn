@@ -7,7 +7,7 @@ import os
 
 from math import cos, sin
 from sensor_msgs.msg import JointState
-from gkd_models.srv import Kinematic,KinematicResponse
+from integ_gkd_models.srv import Kinematic,KinematicResponse
 
 
 # load robot parameters from yaml file

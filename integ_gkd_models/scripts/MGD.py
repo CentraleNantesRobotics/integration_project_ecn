@@ -4,7 +4,7 @@ from __future__ import print_function
 from math import *
 import yaml
 from sensor_msgs.msg import JointState
-from gkd_models.srv import MGD,MGDResponse
+from integ_gkd_models.srv import MGD,MGDResponse
 import rospy
 import numpy as np
 import os

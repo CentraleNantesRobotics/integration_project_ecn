@@ -2,7 +2,7 @@
 
 import rospy
 from sensor_msgs.msg import JointState
-from gkd_models.srv import *
+from integ_gkd_models.srv import *
 
 def test_callback():
 	S = JointState()

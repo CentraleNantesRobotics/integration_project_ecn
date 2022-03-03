@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(integ_gkd_models)
+project(integ_gkd_models_fct)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
+
+set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};/opt/ros/noetic")
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -54,13 +56,13 @@ find_package(catkin REQUIRED COMPONENTS
  )
 
 ## Generate services in the 'srv' folder
- add_service_files(
-   FILES
-   Kinematic.srv
-   Dynamic.srv
-   MGD.srv
-   MGI.srv
- )
+ #add_service_files(
+ #  FILES
+ #  Kinematic.srv
+ #  Dynamic.srv
+ #  MGD.srv
+ #  MGI.srv
+ #)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -106,9 +108,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES integ_gcd_models_pkg
-#  CATKIN_DEPENDS roscpp rospy std_msgs
+  INCLUDE_DIRS include
+#  LIBRARIES integ_gkd_models_pkg
+  CATKIN_DEPENDS roscpp std_msgs
 #  DEPENDS system_lib
 )
 
@@ -121,6 +123,7 @@ catkin_package(
 include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
+  src/
 )
 
 ## Declare a C++ library
@@ -131,12 +134,15 @@ include_directories(
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+#add_dependencies(${PROJECT_NAME} msg_pkg_generate_messages_cpp)
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/integ_gcd_models_pkg_node.cpp)
+include_directories(include)
+#add_executable(${PROJECT_NAME}_node src/gkd_fct.cpp)
+add_library(integ_gkd_models_fct SHARED src/gkd_fct.cpp)
+add_dependencies(integ_gkd_models_fct integ_gkd_models_fct_gencpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -162,13 +168,13 @@ include_directories(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
- catkin_install_python(PROGRAMS
-   src/Test_clientMGD
-   src/Test_clientMGI
-   src/Test_clientDynamic
-   src/Test_clientKinematic
-   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
- )
+# catkin_install_python(PROGRAMS
+#   src/Test_clientMGD
+#   src/Test_clientMGI
+#   src/Test_clientDynamic
+#   src/Test_clientKinematic
+#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )
 
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
@@ -207,6 +213,6 @@ include_directories(
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
-#
+
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
