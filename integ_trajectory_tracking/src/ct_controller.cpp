@@ -21,7 +21,7 @@ public:
         nh_private.param<std::string>("setpoint_topic",setpointTopicName,"/trajectory");
 
         nh_private.param<std::string>("first_pid_command_topic",firstPidCommandTopic,"/first_pid_command");
-        nh_private.param<std::string>("first_pid_command_topic",secondPidCommandTopic,"/second_pid_command");
+        nh_private.param<std::string>("second_pid_command_topic",secondPidCommandTopic,"/second_pid_command");
 
         nh_private.param<std::string>("first_joint_command_topic",firstJointCommandTopic,"/joint1_effort_controller/command");
         nh_private.param<std::string>("second_joint_command_topic",secondJointCommandTopic,"/joint2_effort_controller/command");

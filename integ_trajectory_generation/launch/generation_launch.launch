@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+
+<launch>
+
+<node name = "generation_main" pkg = "integ_trajectory_generation" />
+
+</launch>
+

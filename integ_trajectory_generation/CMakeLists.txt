@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(integ_trajectory_generation)
 
+set(CMAKE_BUILD_TYPE Debug)
+
 find_package(
     catkin REQUIRED COMPONENTS
     roscpp
@@ -19,7 +21,7 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 set(BINNAME1 integ_trajectory_generation)
 
 # Set the source files to use with the executable.
-set(SRCS1 ${SRCS1}  src/main.cpp
+set(SRCS1 ${SRCS1}  src/generation_main.cpp
                     src/generation_node.cpp
                     src/utils.cpp)
 
