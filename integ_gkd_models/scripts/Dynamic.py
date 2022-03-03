@@ -9,8 +9,8 @@ import os.path
 
 from math import cos, sin
 from sensor_msgs.msg import JointState
-from gkd_models.msg import dyn_mats
-from gkd_models.srv import Dynamic ,DynamicResponse
+from integ_gkd_models.msg import dyn_mats
+from integ_gkd_models.srv import Dynamic ,DynamicResponse
 
 # load robot parameters :
 	# mi = mass 
@@ -40,12 +40,13 @@ def handle_Dynamic(req):
 	theta_d = req.input.velocity
 	theta_d_d = req.input.effort
 
-	Z1 = m1*c1**2 + m2*(l1**2+c2**2+l1*l2*cos(theta[1])) + Iz1 + Iz2
+  Z1 = m1*c1**2 + m2*(l1**2+c2**2+2*l1*c2*cos(theta[1])) + Iz1 + Iz2
+
 	Z2 = m2*(c2**2+l1*c2*cos(theta[1])) + Iz2
 	Z3 = m2*c2**2 + Iz2
-	Z4 = m2*c2*g*cos(theta[0]+theta[1])
-	Z5 = m2*c2*g*cos(theta[0]+theta[1])+(m1*c2+m2*l1)*g*cos(theta[0])
-	h = -0.5*m2*l1*l2*sin(theta[1])
+	Z4 = m2*c2*g*cos(theta[0]+theta[1])+(m1*c1+m2*l1)*g*cos(theta[0])
+	Z5 = m2*c2*g*cos(theta[0]+theta[1])
+	h = -m2*l1*c2*sin(theta[1])
 	
 	# compute final matrixes
 	# T = D.qdotdot + C.qdot + G
@@ -53,7 +54,7 @@ def handle_Dynamic(req):
 	
 	C=[[h * theta_d[1], h * (theta_d[0]+theta_d[1]) ],[ -h * theta_d[0], 0]]
 	
-	G=[ Z4 , Z5 ]
+	G=[[ Z4] , [Z5 ]]
 	
 	output=dyn_mats()
 	E = np.dot(C,theta_d)+G
@@ -71,7 +72,7 @@ def handle_Dynamic(req):
 def Dynamic_server():
     rospy.init_node('Dynamic_server')
     s = rospy.Service('Dynamic', Dynamic, handle_Dynamic)
-    print("Dynamic Model Direct")
+    #print("Dynamic Model Direct")
     rospy.spin()
 
 if __name__ == "__main__":

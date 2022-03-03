@@ -7,7 +7,7 @@ import os
 
 from math import sqrt, cos, sin, atan2
 from sensor_msgs.msg import JointState
-from gkd_models.srv import MGI,MGIResponse
+from integ_gkd_models.srv import MGI,MGIResponse
 
 
 # load robot parameters from yaml file

@@ -9,7 +9,7 @@ import os.path
 
 from math import cos, sin,atan2, sqrt
 from sensor_msgs.msg import JointState
-from gkd_models.srv import Dynamic,DynamicResponse,Kinematic,KinematicResponse,MGD,MGDResponse,MGI,MGIResponse
+from integ_gkd_models.srv import Dynamic,DynamicResponse,Kinematic,KinematicResponse,MGD,MGDResponse,MGI,MGIResponse
 
 	
 path=os.path.dirname(__file__)
