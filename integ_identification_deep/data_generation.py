@@ -1,8 +1,10 @@
 import numpy as np
+import os
 from random import random
 import signal
 from subprocess import Popen
 from subprocess import check_output
+import time
 
 # OPTION ROBOTIQUE 2021-2022    PROJET INTEG     -IDENTIFICATION-                N.FRAPPEREAU & J.DELACOUX
 
@@ -17,28 +19,66 @@ from subprocess import check_output
 
 
 def gather_data(mass_min,mass_max,inertia_min,inertia_max,r1_min,r1_max,r2_min,r2_max):
-		# ~ 
-		# ~ Generates a given number of pseudo-random datapoints, spanning the entire coordinate space for the training algorithm. 
+	# ~ 
+	# ~ Generates a given number of pseudo-random datapoints, spanning the entire coordinate space for the training algorithm. 
 	# ~ We hope it is a statistically complete representation of the space.                                                   .
 	# ~ 
 	# ~ 
-	data_points = 50
+	data_points = 30 	# ~ number of simulations to run with different parameters (beware: 30  simulations ~15mins)
 	for i in range(data_points):
+		simulation_counter = f"""
+		
+		
+		############################################
+												  		
+		            SIMULATION N°{i}            
+												  
+		############################################
+		
+		
+		
+		"""
+		print(simulation_counter)
+		
+		# ~ Generate a random set of parameters
 		mass_1 = round(random()*(mass_max-mass_min) + mass_min, 3)
 		mass_2 = round(random()*(mass_max-mass_min) + mass_min, 3)
 		inertia_1 = round(random()*(inertia_max-inertia_min) + inertia_min, 3)
 		inertia_2 = round(random()*(inertia_max-inertia_min) + inertia_min, 3)
 		com_1 = round(random()*(r1_max-r1_min) + r1_min, 3)
 		com_2 = round(random()*(r2_max-r2_min) + r2_min, 3)
+		
+		# ~ Start the simulation with the given set of parameters
 		simulation = Popen(f'roslaunch integ_gazebo arm.launch mass_1:={mass_1} mass_2:={mass_2} ixx_1:={inertia_1} ixx_2:={inertia_2} com_1:={com_1} com_2:={com_2} gui:=false --no-summary'.split())
-		record_data = Popen(f'rosbag record -q -O /user/eleves/nfrapperea2019/ros/src/integration_project_ecn/integ_identification_deep/dataset/{inertia_1}-{inertia_2}-{mass_1}-{mass_2}-{com_1}-{com_2} /joint_states '.split())
+		
+		# ~ Wait for Gazebo to be running and publishing on /joint_states
+		while True:
+			time.sleep(1)
+			try:
+				out1 = check_output(['rostopic','list']).decode().splitlines()
+			except:
+				out1 = []
+			if '/joint_states' in out1:
+				out2 = check_output(['rostopic','info','/joint_states']).decode()
+				if '/gazebo' in out2 :
+					break
+			
+		# ~ Begin recording data in a bag file with the parameters used for the simulation in its name
+		record_data = Popen(f'rosbag record -q -O {os.path.dirname(os.path.abspath(__file__))}/dataset/{inertia_1}-{inertia_2}-{mass_1}-{mass_2}-{com_1}-{com_2} /joint_states '.split())
+				
+		# ~ Playback a given input_data.bag file (the same for all the simulations) composed of the input efforts for both links
 		playback_input = Popen('rosbag play -q input_data.bag'.split())
-		#attendre 4 secondes de temps de simulation, ptet que ça peut se faire en 0,5s de temps réel ??
-		time.sleep(6)   #dans le doute
-		#end it all
+					
+		# ~ Wait for a period of time for the entire input_data to be played
+		# ~ It could be interesting to run the simulation faster than real time to make this step go faster
+		time.sleep(4)   #dans le doute
+				
+		# ~ End all of the processes started earlier
 		simulation.send_signal(signal.SIGINT)
 		record_data.send_signal(signal.SIGINT)
 		playback_input.send_signal(signal.SIGINT)
+				
+		# Wait for the Gazebo simulation to be completely closed before starting a new one
 		while True:
 			time.sleep(1)
 			out = check_output(['ps','-A']).decode().splitlines()
@@ -57,20 +97,21 @@ def gather_data(mass_min,mass_max,inertia_min,inertia_max,r1_min,r1_max,r2_min,r
 if __name__ == '__main__':
 
 
-	# Range between which we want to sim masses
+	# ~ Range between which we want to sim masses
 	mass_min = 0.5
 	mass_max = 2
-
-	# Range between which we want to sim inertias
+	
+	# ~ Range between which we want to sim inertias
 	inertia_min = 0.1
 	inertia_max = 1
 
-	# in Gazebo: l1 = 0.8 and l2 = 0.6
+	# ~ in Gazebo: l1 = 0.8 and l2 = 0.6
 	r1_min = 0.1    # minimal distance between the center of mass of link2 and the first axis of rotation (joint1)
 	r1_max = 0.8
 	r2_min = 0.1    # minimal distance between the center of mass of link2 and the second axis of rotation (joint2)
-	r2_max = 0.6
+	r2_max = 0.6	
 	
+	# ~ Start the process
 	gather_data(mass_min,mass_max,inertia_min,inertia_max,r1_min,r1_max,r2_min,r2_max)
 
 
