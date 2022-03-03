@@ -54,10 +54,10 @@ int main (int argc, char** argv)
 
     // ros::ServiceClient client = nh.serviceClient<>("");
     // publisher effort q1 (Torque of first motor)
-    ros::Publisher torque1_publisher = nh.advertise<std_msgs::Float64>("/shoulder_effort_controller/command", 10);
+    ros::Publisher torque1_publisher = nh.advertise<std_msgs::Float64>("/joint1_effort_controller/command", 10);
 
     // publisher effort q2 (Torque of second motor)
-    ros::Publisher torque2_publisher = nh.advertise<std_msgs::Float64>("/elbow_effort_controller/command", 10);
+    ros::Publisher torque2_publisher = nh.advertise<std_msgs::Float64>("/joint2_effort_controller/command", 10);
 
 
     float Te=0.01;
@@ -84,6 +84,8 @@ int main (int argc, char** argv)
     robot_trajectory.velocity.resize(2);
     robot_trajectory.effort.resize(2);
 
+while(ros::ok())
+{
     //calculus of errors sums
 
     position_error[0] = robot_trajectory.position[0] - robot_state.position[0];
@@ -97,15 +99,12 @@ int main (int argc, char** argv)
     sum_before_matrices[0]=Kp1*position_error[0] + Kd1*velocity_error[0]/Te + Ki1*integral_error[0]+robot_trajectory.effort[0];
     sum_before_matrices[1]=Kp2*position_error[1] + Kd2*velocity_error[1]/Te + Ki2*integral_error[1]+robot_trajectory.effort[1];
 
-/*
-    //ask for the matrices M and N
-    N=...;
-    M=...;
+    //then we ask for N and M matrices through a fonction c++
+    std::vector<int> M = {0, 0, 0, 0};
+    std::vector<int> N = {0, 0};
 
-    //compute the torque
-    torque_q1_command = ;
-    torque_q2_command = ;
-    */
+    torque_q1_command.data = M[0]*sum_before_matrices[0] + M[1]*sum_before_matrices[1] + N[0];
+    torque_q2_command.data = M[2]*sum_before_matrices[0] + M[3]*sum_before_matrices[1] + N[1];
 
     // publish setpoint
     torque1_publisher.publish(torque_q1_command);
@@ -113,5 +112,6 @@ int main (int argc, char** argv)
 
     ros::spinOnce();
     rate.sleep();
+}
     return 0;
 }
