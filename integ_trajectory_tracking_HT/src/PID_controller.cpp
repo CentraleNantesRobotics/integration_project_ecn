@@ -36,10 +36,10 @@ int main (int argc, char** argv)
     ros::NodeHandle nh;
 
     // subscriber robot_state
-    ros::Subscriber robot_state_sub = nh.subscribe ("/joint_states", 10, robot_stateCallback);
+    ros::Subscriber robot_state_sub = nh.subscribe ("/state", 10, robot_stateCallback);
 
     // subscriber Trajectoire
-    ros::Subscriber robot_trajectory_sub = nh.subscribe ("/camera_trajectory", 10, robot_trajectoryCallback); //trajectory or camera_trajectory
+    ros::Subscriber robot_trajectory_sub = nh.subscribe ("/trajectory", 10, robot_trajectoryCallback); //trajectory
 
     // publisher effort q1
     ros::Publisher torque1_publisher = nh.advertise<std_msgs::Float64>("/joint1_effort_controller/command", 10);
@@ -90,8 +90,8 @@ int main (int argc, char** argv)
 
         ros::spin();
         rate.sleep();
-
+	}
     return 0;
-    }
+    
 }
 

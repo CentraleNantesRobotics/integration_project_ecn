@@ -146,6 +146,7 @@ void GenerationNode::compute_ti()
  *
  * Inputs : two vectors
  * Output : the vector of their substraction.            */
+
 std::vector<double> substractVectors(const std::vector<double> &vec1, const std::vector<double> &vec2){
     std::vector<double> vecSub;
 
@@ -186,8 +187,14 @@ void GenerationNode::rearrangeTimes()
             td[i] = ta[i] + *std::max_element(substractVectors(td_, ta_).begin(), substractVectors(td_, ta_).end());
             tf[i] = td[i] + *std::max_element(substractVectors(tf_, td_).begin(), substractVectors(tf_, td_).end());
 
-            amax_temp_[i] = 2/(pow(tf[i], 2) - pow(td[i]-ta[i], 2)) * (amax_[i]/2 * (pow(ta_[i], 2) + pow(tf_[i]-td_[i], 2)) + velocities_buffer_[0][i]*((td[i]-td_[i])-(tf[i]-tf_[i])) + vmax_[i]*(td_[i]-ta_[i]) - current_joints_states_.velocity[i]*(td[i]-ta_[i]));
-            vmax_temp_[i] = current_joints_states_.velocity[i] + amax_temp_[i]*ta[i];
+            dmax_temp_[i] = 1/((tf[i]-td[i])*(-3*ta[i]/2 + td[i]/2 + tf[i]/2)) *
+                            (current_joints_states_.velocity[i]*(ta[i]-ta_[i]) + ta[i]/2 * (velocities_buffer_[0][i]-current_joints_states_.velocity[i]) +
+                            amax_temp_[i]/2 * (pow(tf_[i],2) - pow(td_[i],2) - pow(ta_[i],2)) + velocities_buffer_[0][i] * (tf[i] - ta[i]) - vmax_temp_[i] * (td_[i]-ta_[i])
+                            - (tf_[i] - td_[i]) * (velocities_buffer_[0][i] + amax_temp_[i]*tf_[i]));
+
+            amax_temp_[i] = (velocities_buffer_[0][i] - current_joints_states_.velocity[i] - dmax_temp_[i] * (tf[i] - td[i])) / ta[i];
+
+            vmax_temp_[i] = velocities_buffer_[0][i] - dmax_temp_[i] * (tf[i] - td[i]);
         }
 
     } else if (config_[0] == BANGBANG && config_[1] == BANGBANG){
@@ -196,13 +203,28 @@ void GenerationNode::rearrangeTimes()
             ti[i] = *std::max_element(ti_.begin(), ti_.end());
             tf[i] = ti[i] + *std::max_element(substractVectors(tf_, ti_).begin(), substractVectors(tf_, ti_).end());
 
-            amax_temp_[i] = 2/(pow(ti[i], 2) + pow(ti[i]+tf[i], 2)) * (amax_[i]/2 * (pow(ti_[i], 2) + pow(tf_[i]+ti_[i], 2)) - velocities_buffer_[0][i]*((tf[i]-ti[i])-(tf_[i]-ti_[i]))  - current_joints_states_.velocity[i]*(ti[i]-ti_[i]));
+            dmax_temp_[i] = 2/(tf[i] * (tf[i] + 3*ti[i])) *
+                            (amax_temp_[i]*(pow(ti_[i],2)+pow(tf_[i]+ti_[i],2))/2 - ti[i]*(velocities_buffer_[0][i]-current_joints_states_.velocity[i])/2
+                            - current_joints_states_.velocity[i] * (ti[i] - ti_[i]) - velocities_buffer_[0][i] * (tf[i] - ti[i] - tf_[i] +ti_[i]));
+
+            amax_temp_[i] = (velocities_buffer_[0][i] - current_joints_states_.velocity[i] - dmax_temp_[i] * (tf[i] - ti[i])) / ti[i];
+
         }
 
     } else {
 
-        // TO DO : différentes configs
+        // A triangle basically is a trapeze without a plateau
+        int index_B;
+        if (config_[0] == BANGBANG){
+            index_B = 0;
+        }else{
+            index_B = 1;
+        }
 
+        config_[0] = TRAPEZOIDAL;
+        vmax_temp_[index_B] = current_joints_states_.velocity[index_B] + amax_temp_[index_B]*ti_[index_B];
+        ta_[index_B] = ti_[index_B];
+        td_[index_B] = ti_[index_B];
     }
 
     // Update members
@@ -231,7 +253,14 @@ bool GenerationNode::waypointReached()
 }
 
 
-// TO DO : Header
+/* This function computes the next joints states according to the configurations and the various vectors.
+ *
+ * Inputs : - current joint states
+ *          - rearranged times
+ *          - modified max accelerations
+ *          - modified max velocities
+ * Output : next_joints_states   */
+
 void GenerationNode::computingCallback()
 {
 
@@ -253,8 +282,8 @@ void GenerationNode::computingCallback()
 
              } else { //the joints are in the decelarating phase
 
-                next_joints_states_.effort[i] = - amax_temp_[i];
-                next_joints_states_.velocity[i] = current_joints_states_.velocity[i] - publishing_duration_ * amax_temp_[i];
+                next_joints_states_.effort[i] = dmax_temp_[i];
+                next_joints_states_.velocity[i] = current_joints_states_.velocity[i] + publishing_duration_ * dmax_temp_[i];
                 next_joints_states_.position[i] = current_joints_states_.position[i] + publishing_duration_ * (next_joints_states_.velocity[i] + current_joints_states_.velocity[i])/2;
 
             }
@@ -272,16 +301,17 @@ void GenerationNode::computingCallback()
 
              } else { //the joints are in the decelarating phase
 
-                next_joints_states_.effort[i] = - amax_temp_[i];
-                next_joints_states_.velocity[i] = current_joints_states_.velocity[i] - publishing_duration_ * amax_temp_[i];
+                next_joints_states_.effort[i] = dmax_temp_[i];
+                next_joints_states_.velocity[i] = current_joints_states_.velocity[i] + publishing_duration_ * dmax_temp_[i];
                 next_joints_states_.position[i] = current_joints_states_.position[i] + publishing_duration_ * (next_joints_states_.velocity[i] + current_joints_states_.velocity[i])/2;
 
-            }                                                                                                           //  <-- A FAIRE : pas d'idée si profils différents
+            }
         }
 
     } else {
 
-        // TO DO: différentes configs
+        std::cout << "Odd" << std::endl;
+
     }
 }
 
