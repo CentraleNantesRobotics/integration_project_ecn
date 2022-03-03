@@ -34,6 +34,8 @@ public:
     void rearrangeTimes();
     void nextWaypoint_update();
     bool waypointReached();
+    void popBuffers();
+    int findIndex(const std::string& , const std::vector<std::string>& );
 
     /******** MGD + MGI ********/    
     std::vector<double> mgd(const std::vector<double> &q)
@@ -69,15 +71,16 @@ private:
     std::vector<double> vmax_temp_;
     std::vector<double> amax_temp_, dmax_temp_;
     double timeSinceArrival_;
+    bool joint_state_received = false;
 
     /******** Parameters ********/
 
     // Definition of arms lengths
-    const double l1_ = 0.5;
-    const double l2_ = 0.5;
+    const double l1_ = 0.8;
+    const double l2_ = 0.6;
 
     // Definition of frequencies and durations
-    const double publishing_freq_ = 1000;
+    const double publishing_freq_ = 100;
     const double publishing_duration_ = 1/publishing_freq_;
 
     // Definition of the tresholds : we consider that a number is null if it is smaller than the threshold
@@ -85,8 +88,8 @@ private:
     const double metric_threshold_  = 0.01;
 
     // Definition of maximal velocities and accelerations
-    const std::vector<double> vmax_ = {10, 10};
-    const std::vector<double> amax_ = {10, 10};
+    const std::vector<double> vmax_ = {5, 5};
+    const std::vector<double> amax_ = {5, 5};
 
     // Definition of some constants indicating the type of the function followed by the angular speed of a joint
     const int TRAPEZOIDAL = 0;

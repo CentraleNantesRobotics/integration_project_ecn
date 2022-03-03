@@ -253,6 +253,32 @@ bool GenerationNode::waypointReached()
 }
 
 
+/* This function removes the first element of the member buffers.
+ *
+ * Inputs : said buffers
+ * Output : modified buffers                                   */
+
+void GenerationNode::popBuffers()
+{
+    positions_buffer_.erase(positions_buffer_.begin());
+    velocities_buffer_.erase(velocities_buffer_.begin());
+    accelerations_buffer_.erase(accelerations_buffer_.begin());
+}
+
+
+/* This function finds the index corresponding to an element in a vector
+ *
+ * Inputs : - element looked for
+ *          - vector analysed
+ * Output : the index corresponding to this element or the size of the vector if it wasn't found */
+
+int GenerationNode::findIndex(const std::string &name, const std::vector<std::string> & names)
+{
+  const auto elem = std::find(names.begin(), names.end(), name);
+  return std::distance(names.begin(), elem);
+}
+
+
 /* This function computes the next joints states according to the configurations and the various vectors.
  *
  * Inputs : - current joint states
@@ -280,7 +306,7 @@ void GenerationNode::computingCallback()
                 next_joints_states_.velocity[i] = vmax_temp_[i];
                 next_joints_states_.position[i] = current_joints_states_.position[i] + publishing_duration_ * (next_joints_states_.velocity[i] + current_joints_states_.velocity[i])/2;
 
-             } else { //the joints are in the decelarating phase
+             } else { //the joints are in the decelerating phase
 
                 next_joints_states_.effort[i] = dmax_temp_[i];
                 next_joints_states_.velocity[i] = current_joints_states_.velocity[i] + publishing_duration_ * dmax_temp_[i];

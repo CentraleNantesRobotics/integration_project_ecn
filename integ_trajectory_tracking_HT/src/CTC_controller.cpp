@@ -7,11 +7,13 @@
 #include <control_toolbox/SetPidGains.h>
 #include <cmath>
 
-
 //#include <gkd_models/Dynamic.h>
 #include <std_msgs/Float64.h>
 
 #include <sensor_msgs/JointState.h>
+//inutile mais peut servir pour creer nos propres messages
+//#include <Suivi_traj_EK/Commande.h>
+
 
 using namespace std;
 using namespace control_toolbox;
@@ -23,7 +25,7 @@ sensor_msgs::JointState commande;
 std_msgs::Float64 torque_q1_command;
 std_msgs::Float64 torque_q2_command;
 sensor_msgs::JointState jt_state;
-
+//gkd_models::Dynamic srv;
 control_toolbox::SetPidGainsRequest gains;
 
 
@@ -50,10 +52,7 @@ int main (int argc, char** argv)
     // Position, velocity, acceleration desired of each motors
     ros::Subscriber robot_trajectory_sub = nh.subscribe ("/trajectory", 10, robot_trajectoryCallback);
 
-    //Dynamic group used to give the dynamic matrices through a service. Still need the msg type and topic if
-    //you want to get matrices that way
-    //ros::ServiceClient client = nh.serviceClient</* msg type */>("/* Service/Topic Name*/");
-
+    // ros::ServiceClient client = nh.serviceClient<>("");
     // publisher effort q1 (Torque of first motor)
     ros::Publisher torque1_publisher = nh.advertise<std_msgs::Float64>("/joint1_effort_controller/command", 10);
 
@@ -85,6 +84,8 @@ int main (int argc, char** argv)
     robot_trajectory.velocity.resize(2);
     robot_trajectory.effort.resize(2);
 
+while(ros::ok())
+{
     //calculus of errors sums
 
     position_error[0] = robot_trajectory.position[0] - robot_state.position[0];
@@ -98,11 +99,7 @@ int main (int argc, char** argv)
     sum_before_matrices[0]=Kp1*position_error[0] + Kd1*velocity_error[0]/Te + Ki1*integral_error[0]+robot_trajectory.effort[0];
     sum_before_matrices[1]=Kp2*position_error[1] + Kd2*velocity_error[1]/Te + Ki2*integral_error[1]+robot_trajectory.effort[1];
 
-    //then we ask for N and M matrices through a fonction c++ given by another group :
-    //TO DO : here, we took hasardous dynamic matrices but you should modify this in order to make it work.
-    // for the moment, the fonction use a custom message and you have to include the package made by the dynamic group.
-    // Proposal : Work with them to change that, just to make a proper .h to use the function instead of a package and change the custom message into a simple std::vector
-
+    //then we ask for N and M matrices through a fonction c++
     std::vector<int> M = {0, 0, 0, 0};
     std::vector<int> N = {0, 0};
 
@@ -113,7 +110,8 @@ int main (int argc, char** argv)
     torque1_publisher.publish(torque_q1_command);
     torque2_publisher.publish(torque_q2_command);
 
-    ros::spin();
+    ros::spinOnce();
     rate.sleep();
+}
     return 0;
 }

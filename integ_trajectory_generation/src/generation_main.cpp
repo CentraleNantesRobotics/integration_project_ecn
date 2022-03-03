@@ -11,12 +11,13 @@ int main(int argc, char **argv)
 
     GenerationNode node;
 
-    const double frequency = 100;
+    const double frequency = 10;
     ros::Rate rate(frequency);
 
     while (ros::ok())
     {
-        ros::spin();
+        node.publishingCallback();
+        ros::spinOnce();
         rate.sleep();
     }
 
