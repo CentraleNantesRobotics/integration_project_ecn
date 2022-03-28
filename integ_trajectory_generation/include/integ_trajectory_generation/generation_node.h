@@ -1,7 +1,6 @@
 /* -------------------------------------------------------------------
- * This file serves as the main file for the generation of
- * trajectories. It holds only the main function, which is pretty
- * classic for a ros project.
+ * This file defines the GenerationNode class, along with two basic
+ * functions that are not inherent to this node.
  * -------------------------------------------------------------------*/
 
 #ifndef GENERATION_NODE_H
@@ -26,7 +25,6 @@ public:
     /******** Construction ********/
     GenerationNode();
 
-
     /******** Callbacks ********/
     void stateSubscribingCallback(const sensor_msgs::JointState&);
     void waypointSubscribingCallback(const geometry_msgs::Pose2D&);
@@ -47,40 +45,20 @@ public:
     void nextWaypoint_update();
 
 
-private:
+    /******** Public parameters ********/
 
-    /******** Buffers ********/
-    std::vector<std::vector<double>> positions_buffer_ ;
-    std::vector<std::vector<double>> velocities_buffer_;
-    std::vector<std::vector<double>> accelerations_buffer_;
-
-
-    /******** Variables and their initial value ********/
-    sensor_msgs::JointState current_joints_states_;
-    sensor_msgs::JointState next_joints_states_;
-    std::vector<sensor_msgs::JointState> msg_;
-    geometry_msgs::Pose2D current_waypoint_;
-    std::vector<double> tf_, ta_, td_, ti_;
-    std::vector<int> config_ = {TRAPEZOIDAL, TRAPEZOIDAL};
-    std::vector<double> vmax_temp_ = vmax_;
-    std::vector<double> amax_temp_ = amax_;
-    std::vector<double> dmax_temp_ = {-amax_[0], -amax_[1]};
-    double timeSinceArrival_ = time_threshold_;
-    bool joints_states_init = false;
-
-
-    /******** Parameters ********/
-
-    // Definition of arms lengths
-    const double l1_ = 0.8;
-    const double l2_ = 0.6;
-
-public :
     // Definition of frequencies and durations
     const double publishing_freq_ = 100;
     const double publishing_duration_ = 1/publishing_freq_;
 
 private:
+
+    /******** Private parameters ********/
+
+    // Definition of arms lengths
+    const double l1_ = 0.8;
+    const double l2_ = 0.6;
+
     // Definition of the tresholds : we consider that a number is null if it is smaller than the threshold
     const double time_threshold_ = 0.05;
     const double metric_threshold_  = 0.01;
@@ -92,6 +70,25 @@ private:
     // Definition of some constants indicating the type of the function followed by the angular speed of a joint
     const int TRAPEZOIDAL = 0;
     const int BANGBANG = 1;
+
+
+    /******** Buffers ********/
+    std::vector<std::vector<double>> positions_buffer_ ;
+    std::vector<std::vector<double>> velocities_buffer_;
+    std::vector<std::vector<double>> accelerations_buffer_;
+
+
+    /******** Variables and their initial value ********/
+    sensor_msgs::JointState current_joints_states_;
+    sensor_msgs::JointState next_joints_states_;
+    geometry_msgs::Pose2D current_waypoint_;
+    std::vector<double> tf_, ta_, td_, ti_;
+    std::vector<int> config_ = {TRAPEZOIDAL, TRAPEZOIDAL};
+    std::vector<double> vmax_temp_ = vmax_;
+    std::vector<double> amax_temp_ = amax_;
+    std::vector<double> dmax_temp_ = {-amax_[0], -amax_[1]};
+    double timeSinceArrival_ = time_threshold_;
+    bool joints_states_init = false;
 
 
     /******** ROS Stuff ********/

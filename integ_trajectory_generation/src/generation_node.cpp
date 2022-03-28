@@ -9,7 +9,6 @@
 
 #include <integ_trajectory_generation/generation_node.h>
 
-
 GenerationNode::GenerationNode()
 {
     /******** Vectors variable initialisation ********/
@@ -43,8 +42,6 @@ GenerationNode::GenerationNode()
     accelerations_buffer_.push_back({0, 0});
 
 }
-
-
 
 void GenerationNode::stateSubscribingCallback(const sensor_msgs::JointState& msg)
 {
@@ -94,7 +91,7 @@ void GenerationNode::nextWaypoint_update()
 
 
 void GenerationNode::publishingCallback()
-{ 
+{
     // Checks if the joints_states were initialized
     if (joints_states_init){
 
@@ -133,3 +130,5 @@ void GenerationNode::publishingCallback()
         trajectory_publisher_.publish(next_joints_states_);
     }
 }
+
+

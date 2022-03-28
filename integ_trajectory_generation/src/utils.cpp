@@ -109,11 +109,11 @@ void GenerationNode::compute_tf()
         // const double ddqb = accelerations_buffer_[0][i];
 
         const float deltaQ = qb- qa;
-        const float deltaQLim = (2*dqa*(vmax_[i]-dqa) + 2*dqb*(vmax_[i]-dqb) + (dqb-dqa)*(2*vmax_[i]-dqb-dqa))/(2*amax_[i]);
+        const float deltaQLim = (2*vmax_[i]*(2*vmax_[i]-dqa-dqb) - pow(vmax_[i]-dqa,2) - pow(2*vmax_[i]-dqb-dqa,2))/amax_[i];
 
         if (deltaQ < deltaQLim){
             config_[i] = BANGBANG;
-            tf.push_back(((2*vmax_[i]+dqa-dqb) + 2*sqrt(pow((2*vmax_[i]-dqa-dqb)/2,2) - pow(2*vmax_[i]-dqa-dqb,2) - 5*amax_[i]*deltaQ))/(5*amax_[i]));
+            tf.push_back( ((dqa+dqb)/2 + sqrt(dqa*dqb + amax_[i])*deltaQ)/amax_[i] );
         } else {
             config_[i] = TRAPEZOIDAL;
             tf.push_back((deltaQ + (dqb-dqa)*(2*vmax_[i]-dqb-dqa))/(2*amax_[i]));
@@ -210,7 +210,7 @@ void GenerationNode::compute_ti()
         if (config_[i] == BANGBANG){
             const double dqa = current_joints_states_.velocity[i];
             const double dqb = velocities_buffer_[0][i];
-            ti.push_back((2*vmax_[i]-dqa-dqb)/amax_[i] - tf_[i]/2);
+            ti.push_back((tf_[i]+(dqb-dqa)/amax_[i])/2);
 
         } else {
             ti.push_back(-1);
