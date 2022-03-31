@@ -18,18 +18,26 @@
 #include <ecn_common/color_detector.h>
 #include <calc.h>
 
+/* This file is the main code and the main node for the reference command.
+ * We apply the Visual Servo Control methode to determine the velocity and the position of the joints needed for the
+ * camera to shoot the target.
+ * To achieve that, the calc.cpp and calc.h files are used to compute the needed matrices for the algorithm.
+ * A node/topic could be created to get the parameter of the robot but we choose to add them manually.
+ * You can find the course about Visual Servo Control on the webiste of Oliver Kermorgant.
+ */
+
 using namespace std;
 // Initializing the data we need.
 vpColVector q(2);
 vpFeaturePoint s;
+
 void TargetPointMessageCallback(const geometry_msgs::Pose2D message_s)
 {
     //this function only sets the received message message_s to the vpFeaturePoint format
-    // The frame of the camera on Gazebo is different from the frame we used, so we used a rotation along y of pi/2.
     // Don't forget to send the correct velocities value to the publisher
-    s.set_x(-message_s.y);
-    s.set_y(message_s.x);
-    s.set_Z(1);             // is set to 1 for the current problem only.
+    s.set_x(message_s.x);
+    s.set_y(message_s.y);
+    s.set_Z(1);             // is set to 1 for the current problem.
 }
 
 void JointStatesMessageCallback(const sensor_msgs::JointState message_s)
@@ -38,65 +46,68 @@ void JointStatesMessageCallback(const sensor_msgs::JointState message_s)
     q[0] = message_s.position[0];
     q[1] = message_s.position[1];
 }
+
 int main(int argc, char **argv)
 {
-    // Parameters (modify here if needed) NEED TO CHANGE THEM SO WE GET THEM THROUGH ROS
+    // Parameters (modify here if needed)
 
     double lambda = 50;
     double l1 = 0.8;
     double l2 = 0.6;
-    double offset = 0.0;
-    double focal = 0.01;
 
+    double deltaT = 0.1; // sampling period
     // ROS part    featurePointPositionSub.
-	ros::init(argc, argv, "reference_command_node");
+    ros::init(argc, argv, "integ_reference_command");
     ros::NodeHandle node;
-    ros::Publisher velocityPub = node.advertise<sensor_msgs::JointState>("desired_joint_v", 1000);
+    ros::Publisher velocityPub = node.advertise<sensor_msgs::JointState>("/camera_trajectory", 10);
 
-    ros::Subscriber featurePointPositionSub = node.subscribe("target_position", 1000, TargetPointMessageCallback);
-    ros::Subscriber jointStatesSub = node.subscribe("joint_states", 1000, JointStatesMessageCallback);
+    //This part is only to test with the simulation_trajectory and should be deleted when the code works.
+    ros::Subscriber featurePointPositionSub = node.subscribe("/trajSim", 10, TargetPointMessageCallback);
+    ros::Subscriber jointStatesSub = node.subscribe("/stateSim", 10, JointStatesMessageCallback);
+
+    //This part should be kept and should be uncommented when the code works.
+    //ros::Subscriber featurePointPositionSub = node.subscribe("masscenter", 1000, TargetPointMessageCallback);
+    //ros::Subscriber jointStatesSub = node.subscribe("state", 1000, JointStatesMessageCallback);
 
 	tf::TransformListener listener;
-	ros::Rate loop_rate(10);
+    ros::Rate loop_rate(1/deltaT);
 
 	while (ros::ok())
     {
-		auto L = s.interaction(); //L is the interaction matrix
+        vpMatrix L = s.interaction(); //L is the interaction matrix
 		sensor_msgs::JointState targetJointState; //this is what we will publish
 
-        vpRotationMatrix RotCam3x3 = GetRotCam3x3(); // Changement de repère de la cam "usuel" à celle de Gazebo.
-        vpVelocityTwistMatrix RotCam6x6 = GetRotCamToGazebo(RotCam3x3);
-        vpVelocityTwistMatrix W = GetW(offset);
+        vpVelocityTwistMatrix W = GetW();
         vpVelocityTwistMatrix R = GetR(q[0],q[1]);
 
         // Computing what we need to get the joints velocity.
-//		vpMatrix sVector(s.get_s());
-
-        auto sPoint = - lambda * RotCam3x3 * s.get_s(); //
-        auto J = GetJac(q[0], q[1], l1, l2);
-        auto Jc = W * R * J;
-        auto JcGazebo = RotCam6x6 * Jc;
-        auto Js = L * JcGazebo;
+        auto sPoint = - lambda * s.get_s();
+        vpMatrix J = GetJac(q[0], q[1], l1, l2);
+        vpMatrix Jc = W * R * J;
+        vpMatrix Js = L * Jc;
         auto qPoint = Js.pseudoInverse() * sPoint;
 
-        //Deplacement
-        std::pair<double, double> deplacement = Deplacement(l1,l2,q[0],q[1],focal, s.get_x(), s.get_y());
-        // MGI
-        std::pair<double, double> angles = MGI(deplacement.first, deplacement.second, l1, l2);
+        // desired position
+        vpColVector angles(2);
+        angles[0]= q[0] + 0.5*deltaT*qPoint[0];
+        angles[1]= q[1] + 0.5*deltaT*qPoint[1];
 
-        // Valeurs à renvoyer
-        targetJointState.name.push_back("moteur1");
-        targetJointState.name.push_back("moteur2");
+        // Publishing the values.
+        targetJointState.name.push_back("joint 1");
+        targetJointState.name.push_back("joint 2");
         targetJointState.velocity.push_back(qPoint[0]);
         targetJointState.velocity.push_back(qPoint[1]);
-        targetJointState.position.push_back(angles.first);
-        targetJointState.position.push_back(angles.second);
+        targetJointState.position.push_back(angles[0]);
+        targetJointState.position.push_back(angles[1]);
         velocityPub.publish(targetJointState);
 
-		cout << "target speed: " << qPoint << endl;
+        cout << "target speed: " << endl;
+        cout << qPoint << endl;
+        cout << "target position: " << endl;
+        cout << angles << endl;
 
-		ros::spinOnce();
-		loop_rate.sleep();
+        ros::spinOnce();
+        loop_rate.sleep();
 	}
 
 	return 0;
