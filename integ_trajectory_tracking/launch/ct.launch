@@ -1,0 +1,28 @@
+<launch>
+
+    <include file="$(find integ_trajectory_tracking)/launch/pid.launch">
+        <arg name="Kp1" value="5.0"/>
+        <arg name="Ki1" value="0.1"/>
+        <arg name="Kd1" value="0.1"/>
+
+        <arg name="Kp2" value="5.0"/>
+        <arg name="Ki2" value="0.1"/>
+        <arg name="Kd2" value="0.1"/>
+
+        <arg name="first_joint_command_topic" value="/first_pid_command"/>
+        <arg name="second_joint_command_topic" value="/second_pid_command"/>
+    </include>
+
+    <group ns="controllers">
+        <node name="ct_controller_node" pkg="integ_trajectory_tracking" type="ct_controller" output="screen" >
+            <param name="joint_state_topic" value="/state"/>
+            <param name="setpoint_topic" value="/trajectory"/>
+            <param name="first_pid_command_topic" value="/first_pid_command"/>
+            <param name="second_pid_command_topic" value="/second_pid_command"/>
+            <param name="first_joint_command_topic" value="/joint1_effort_controller/command"/>
+            <param name="second_joint_command_topic" value="/joint2_effort_controller/command"/>
+        </node>
+    </group>
+
+
+</launch>
