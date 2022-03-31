@@ -4,6 +4,8 @@
 #include <opencv2/highgui.hpp>
 #include <iostream>
 #include <geometry_msgs/Point.h>
+#include <geometry_msgs/PointStamped.h>
+#include <string.h>
 
 
 namespace ecn
@@ -131,18 +133,18 @@ std::vector<cv::Point> ColorDetector::findMainContour(const cv::Mat &_im)
 }
 
 
-geometry_msgs::Point ColorDetector::process(const cv::Mat &_im)
+geometry_msgs::PointStamped ColorDetector::process(const cv::Mat &_im)
 {
-    geometry_msgs::Point mass_center;
+    geometry_msgs::PointStamped mass_center;
     cv::Mat im_proc;
     mass_center = process(_im, im_proc, false);
     return mass_center;
 }
 
 
-geometry_msgs::Point ColorDetector::process(const cv::Mat &_im, cv::Mat &_im_processed, bool write_output)
+geometry_msgs::PointStamped ColorDetector::process(const cv::Mat &_im, cv::Mat &_im_processed, bool write_output)
 {
-    geometry_msgs::Point mass_center;
+    geometry_msgs::PointStamped mass_center;
     bool circletest = false;
     auto contour = findMainContour(_im);
 
@@ -150,7 +152,7 @@ geometry_msgs::Point ColorDetector::process(const cv::Mat &_im, cv::Mat &_im_pro
     {
         if(show_output_ || write_output)
             _im.copyTo(_im_processed);
-        mass_center.z = 0;
+        mass_center.header.seq = 0;
         return mass_center;
     }
 
@@ -168,8 +170,8 @@ geometry_msgs::Point ColorDetector::process(const cv::Mat &_im, cv::Mat &_im_pro
         y_ = .5*(y_ + pt.y);
         area_ = .5*(area_ + radius*radius*M_PI);
 
-        mass_center.x = pt.x;
-        mass_center.y = pt.y;
+        mass_center.point.x = pt.x;
+        mass_center.point.y = pt.y;
 
         // write if needed
         if(show_output_ || write_output)
@@ -201,14 +203,35 @@ geometry_msgs::Point ColorDetector::process(const cv::Mat &_im, cv::Mat &_im_pro
         if (!circletest){
             double x = m.m10/m.m00;
             double y = m.m01/m.m00;
-            mass_center.x = x;
-            mass_center.y = y;
-            std::cout<<"Center of mass coordinates :" << x << " ; " << y << std::endl;
+            double m_c11 = m.m11 - x*m.m01;
+            double m_c20 = m.m20 - x*m.m10;
+            double m_c02 = m.m02 - y*m.m01;
+            double m_c30 = m.m30 - 3*x*m.m20 + 2*pow(x,2)*m.m10;
+            double m_c03 = m.m03 - 3*y*m.m02 + 2*pow(y,2)*m.m01;
+            double m_c21 = m.m21 - 2*x*m.m11 - y*m.m20 +2*pow(x,2)*m.m01;
+            double m_c12 = m.m12 - 2*y*m.m11 - x*m.m02 +2*pow(y,2)*m.m10;
+            double theta = 0.5*atan(2*m_c11/(m_c20-m_c02));
+            double Inertia1 = 0.5*(m_c20+m_c02) - 0.5*(m_c20-m_c02)*cos(2*theta) - 0.5*2*m_c11*sin(2*theta);
+            double Inertia2 = 0.5*(m_c20+m_c02) - 0.5*(m_c20-m_c02)*cos(2*(theta+M_PI/2)) - 0.5*2*m_c11*sin(2*(theta+M_PI/2));
+            if (Inertia2 < Inertia1)
+            {
+                theta = theta + M_PI/2;
+            }
+
+            double m_rep30 = m_c30*pow(cos(-theta),3) - 3*m_c21*pow(cos(-theta),2)*sin(-theta) + 3*m_c12*cos(-theta)*pow(sin(-theta),2) - m_c03*pow(sin(-theta),3);
+            if (m_rep30 < 0)
+            {
+                theta = theta + M_PI;
+            }
+            mass_center.point.x = x;
+            mass_center.point.y = y;
+            mass_center.point.z = theta;
+           // std::cout<<"Center of mass coordinates :" << x << " ; " << y << std::endl;
         }
         cv::imshow("Color detector output",_im_processed);
         cv::waitKey(1);
     }
-    mass_center.z = 1;
+    mass_center.header.seq = 1;
     return mass_center;
 }
 }

@@ -5,6 +5,7 @@
 #include <opencv2/highgui.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <geometry_msgs/Point.h>
+#include <geometry_msgs/PointStamped.h>
 
 namespace ecn
 {
@@ -90,18 +91,18 @@ public:
 
     bool process(const sensor_msgs::ImageConstPtr &_msg, cv::Mat &_im_processed, bool write_output = true)
     {
-      geometry_msgs::Point mass_center;
+      geometry_msgs::PointStamped mass_center;
       mass_center = process(cv_bridge::toCvShare(_msg, "bgr8")->image,
                      _im_processed, write_output);
-      if (mass_center.z == 1){
+      if (mass_center.header.seq == 1){
       return true;
       }
       else{
       return false;
       }
     }
-    geometry_msgs::Point process(const cv::Mat &_im, cv::Mat &_im_processed, bool write_output = true);
-    geometry_msgs::Point process(const cv::Mat &_im);
+    geometry_msgs::PointStamped process(const cv::Mat &_im, cv::Mat &_im_processed, bool write_output = true);
+    geometry_msgs::PointStamped process(const cv::Mat &_im);
 
     // get resulting info
     inline double x() const {return (x_-cam.u0)*cam.ipx;}

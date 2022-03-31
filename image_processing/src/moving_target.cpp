@@ -29,9 +29,10 @@ int main(int argc, char **argv)
     const auto t{ros::Time::now().toSec()};
 
     pose.position.x = 2.0;
-    pose.position.y = r*(5*sin(w*t)-4*sin(4*w*t));
-    pose.position.z = 1.4 + r*(5*cos(w*t)-4*cos(4*w*t));
-
+    pose.position.y = 0*r*(5*sin(w*t)-4*sin(4*w*t));
+    pose.position.z = 1.4 + 0*r*(5*cos(w*t)-4*cos(4*w*t));
+    pose.orientation.x = sin(w/5*t);
+    pose.orientation.w = cos(w/5*t);
 
     client.call(setmodelstate);
     ros::spinOnce();

@@ -62,10 +62,10 @@ int main(int argc, char** argv)
         if(im_ok)
         {
 
-            mass_center.point = cd.process(im);
+            mass_center = cd.process(im);
             mass_center.header.stamp = stamp;
 
-            if(mass_center.point.z > 0.5)
+            if(mass_center.header.seq > 0)
             {
                 mass_center.point.x = (mass_center.point.x - cd.cam.u0) * cd.cam.ipx;
                 mass_center.point.y = (mass_center.point.y - cd.cam.v0) * cd.cam.ipy;
