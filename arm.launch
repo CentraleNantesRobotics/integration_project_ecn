@@ -10,6 +10,10 @@
   <!-- This argument is use to choose how to control the robot, choose a value between "position" and "effort" -->
   <arg name="control" default="effort"/>
   
+  <!-- These argument are used to choose a target (either 'box' or 'sphere') and a target trajectory (either 'circle', 'square' or 'custom_trajectory')-->
+  <arg name="target" default="sphere"/>
+  <arg name="trajectory" default="circle"/>
+  
   <!-- We declare here every argument we use in the robot model -->
   <arg name="mass_1" default="1."/>
   <arg name="mass_2" default="0.5"/>
@@ -49,9 +53,29 @@
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
     args="-urdf -model integ -param robot_description"/>
 
-   <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF target -->
+      <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF target = box if the arg is box-->
   <node name="target_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
-    args="-urdf -z 1 -x 1 -y 1 -model cible_simple -file $(find integ_description)/urdf/cible.urdf"/>
+    args="-urdf -z 1 -x 1 -y 1 -model target -file $(find integ_description)/urdf/target_models/box.urdf"
+    if="$(eval arg('target') == 'box')"/>
+
+
+   <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF target  = sphere if the arg is sphere or none is given -->
+    <node name="target_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+    args="-urdf -z 1 -x 1 -y 1 -model target -file $(find integ_description)/urdf/target_models/sphere.urdf"
+    if="$(eval arg('target') == 'sphere')"/>
+
+   <!-- Run a cpp script to launch target's trajectory control = a square if the arg square is given-->
+  <node name="square" pkg="target_trajectories" type="square"
+  if="$(eval arg('trajectory') == 'square')"/>
+
+  
+     <!-- Run a cpp script to launch target's trajectory control = a circle if the arg circle is given -->
+  <node name="circle" pkg="target_trajectories" type="circle"
+  if="$(eval arg('trajectory') == 'circle')"/>
+  
+     <!-- Run a cpp script to launch target's trajectory control = a custom trajectory if the arg custom_trajectory is given -->
+  <node name="custom_trajectory" pkg="target_trajectories" type="custom_trajectory"
+  if="$(eval arg('trajectory') == 'custom_trajectory')"/>
     
     <!-- Run controllers (http://gazebosim.org/tutorials/?tut=ros_control) -->
   <!-- Load joint controller configurations from YAML file to parameter server -->
