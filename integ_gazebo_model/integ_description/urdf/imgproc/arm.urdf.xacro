@@ -1,0 +1,226 @@
+<?xml version="1.0"?>
+<robot name="arm" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<!-- Geometrical properties -->
+
+
+  <xacro:arg name="mass1" default="1."/>
+  <xacro:arg name="mass2" default="0.5"/>
+  <xacro:arg name="hand_length" default="0.8"/>
+  <xacro:arg name="finger_length" default="0.6"/>
+
+  <xacro:property name="PI" value="3.14159265359"/>
+  <xacro:property name="link_side" value="0.04"/>
+  <xacro:property name="joint_radius" value="0.036"/>
+  <xacro:property name="joint_length" value="0.05"/>
+  <xacro:property name="arm_length" value="0.001"/>
+  <xacro:property name="finger_length" value="$(arg finger_length)"/>
+  <xacro:property name="mass1" value="$(arg mass1)"/>
+  <xacro:property name="mass2" value="$(arg mass2)"/>
+  <xacro:property name="hand_length" value="$(arg hand_length)"/>
+  <xacro:property name="camera_link" value="0.05"/>
+  <xacro:property name="axel_offset" value="0.05"/>
+  <xacro:property name="height3" value="1"/>
+
+
+  <!-- Materials -->
+
+  <material name="orange">
+    <color rgba="1.00 0.67 0.02 1.00"/>
+  </material>
+
+  <material name="gray">
+    <color rgba="0.80 0.80 0.80 1.00"/>
+  </material>
+  
+  <material name="red">
+	   <color rgba="0.8 0.0 0.0 1.0"/>
+  </material>
+
+
+  <!-- Joints Control in Gazebo -->
+
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so"/>
+    <robotNamespace>/</robotNamespace>
+  </gazebo>
+
+  <!-- Generates a box visual/collision/inertial -->
+
+  <xacro:macro name="prism_vci" params="side length mass *origin">
+
+    <xacro:macro name="prism_geometry">
+      <xacro:insert_block name="origin"/>
+      <geometry>
+        <box size="${side} ${side} ${length}"/>
+      </geometry>
+    </xacro:macro>
+
+    <visual>
+      <xacro:prism_geometry/>
+      <material name="orange"/>
+    </visual>
+
+    <inertial>
+      <xacro:insert_block name="origin"/>
+      <mass value="${mass}"/>
+      <inertia ixx="${(mass/12)*(side*side+length*length)}"
+               iyy="${(mass/12)*(side*side+length*length)}"
+               izz="${(mass/6)*(side*side)}"
+               ixy="0" ixz="0" iyz="0"/>
+    </inertial>
+
+  </xacro:macro>
+
+  <!-- Generates child joint of parent -->
+  <xacro:macro name="arm_joint" params="child parent dist">
+
+    <joint name="${parent}_${child}_joint" type="revolute">
+      <origin xyz="0 0 ${dist}" rpy="0 0 0"/>
+      <parent link="${parent}"/>
+      <child link="${child}"/>
+      <axis xyz="1 0 0"/>
+      <limit effort="100.0"
+             velocity="10.0"
+             lower="${-PI}"
+             upper="${PI}"/>
+    </joint>
+
+    <!-- Required for ROS control -->
+    <transmission name="${parent}_${child}_transmission">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${parent}_${child}_joint">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="${parent}_${child}_actuator"/>
+    </transmission>
+
+  <!--Creating a visual for the joints-->
+    <joint name="${parent}_${child}_fixed" type="fixed">
+        <origin xyz="0 0 ${dist}" rpy="0 ${PI/2} 0"/>
+        <parent link="${parent}"/>
+        <child link="${child}_fixed"/>
+    </joint>
+
+    <link name="${child}_fixed">
+      <visual>
+        <geometry>
+          <cylinder length="${joint_length}" radius="${joint_radius}"/>
+        </geometry>
+        <material name="gray"/>
+      </visual>
+    </link>
+
+  </xacro:macro>
+
+  <!-- World frame (for Gazebo) -->
+  <link name="world"/>
+
+  <!-- Arm fixed to world frame  -->
+  <joint name="world_foot_joint" type="fixed">
+    <parent link="world"/>
+    <child link="arm"/>
+  </joint>
+
+  <!-- Joints Chain -->
+  <xacro:arm_joint parent="arm" child="hand" dist="${arm_length}"/>
+  <xacro:arm_joint parent="hand" child="finger" dist="$(arg hand_length)"/>
+
+ <!--LINKS-->
+
+ <!-- arm -->
+ <link name="arm">
+    <xacro:prism_vci length="${arm_length}" mass = "$(arg mass1)" side="${link_side}">
+      <origin xyz="0 0 ${arm_length/2}" rpy="0 0 0"/>
+    </xacro:prism_vci>
+  </link>
+
+  <gazebo reference="arm">
+    <material>Gazebo/Red</material>
+  </gazebo>
+
+ <!-- hand -->
+  <link name="hand">
+    <xacro:prism_vci length="${hand_length}" mass = "$(arg mass2)" side="${link_side}">
+      <origin xyz="0 0 ${hand_length/2}" rpy="0 0 0"/>
+    </xacro:prism_vci>
+  </link>
+
+  <gazebo reference="hand">
+    <material>Gazebo/Red</material>
+  </gazebo>
+
+  <!-- End effector -->
+  <link name="finger">
+    <xacro:prism_vci length="${finger_length}" mass = "$(arg mass2)" side="${link_side}">
+      <origin xyz="0 0 ${finger_length/2}" rpy="0 0 0"/>
+    </xacro:prism_vci>
+  </link>
+
+  <gazebo reference="finger">
+    <material>Gazebo/Red</material>
+  </gazebo>
+
+ 
+  <!-- Camera not well defined-> go to 0, 0, 0 -->
+  
+   <link name="camera_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${camera_link} ${camera_link} ${camera_link}"/>
+      </geometry>
+      <material name="red"/>
+    </visual>
+  </link>
+  
+   <joint name="camera_joint" type="fixed">
+    <origin xyz="0 0 ${finger_length}" rpy="${-PI/2} 0 ${-PI/2}"/>
+    <parent link="finger"/>
+    <child link="camera_link"/>
+  </joint>
+    
+   <!-- camera -->
+  <gazebo reference="camera_link">
+    <sensor type="camera" name="camera1">      
+      <update_rate>30.0</update_rate>
+      <camera name="head">
+        <!-- Gazebo uses X as the optical axis -->
+          <visualize>true</visualize>
+          <pose>0 0 0 0 ${-PI/2} ${PI/2}</pose>
+        <horizontal_fov>1.047198</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+        <noise>
+          <type>gaussian</type>
+          <!-- Noise is sampled independently per pixel on each frame.
+               That pixel's noise value is added to each of its color
+               channels, which at that point lie in the range [0,1]. -->
+          <mean>0.0</mean>
+          <stddev>0.007</stddev>
+        </noise>
+      </camera>
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>robot/camera1</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>camera_link</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>
+</robot>
