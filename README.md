@@ -1,4 +1,4 @@
-# Projet Intégration ECN
+# Projet Intégration ECN - ROS 2
 
 # ecn-integ-project
 
@@ -9,22 +9,22 @@
 
 ### General Info
 ***
-As part of the INTEG module at Ecole Centrale de Nantes, this project aims to create an 2R robot in Gazebo capable of shooting at a moving target.
+As part of the INTEG module at Ecole Centrale de Nantes, this project aims to create an 2R robot in Gazebo capable of tracking a moving target.
 
 ## Dependencies
 ***
 A list of technologies used within the project:
-* [ROS](https://ros.org): Version Noetic 
-* [C++](https://cplusplus.com): Version 11.0
-* [Gazebo](https://example.com): Version 9.0
+* [ROS 2](https://ros.org): Version Noetic
+* [C++](https://cplusplus.com): Version 17
+* [Gazebo](https://example.com): Fortress
 
 ## Installation
 ***
-Download the projet to your user home using the following commands.
-The repository will be a ros workspace.
+Download the projet to your ROS 2 workspace
+Compile with `colcon`
 ```
 $ cd ~
 $ git clone https://https://github.com/CentraleNantesRobotics/integration_project_ecn
 $ cd integration_project_ecn
-$ catkin build
+$ colcon build
 $ source devel/setup.bash
