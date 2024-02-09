@@ -5,22 +5,44 @@
      After generation, multiple changes and additions were required as described in the 2R Robot Modeling Technical Report.-->
 <robot  name="scara_sw" xmlns:xacro="http://www.ros.org/wiki/xacro" >
 
- <xacro:arg name="offset" default="1."/>
+    <xacro:arg name="offset" default="1."/>
+    <xacro:arg name="mode" default="position"/>
+
+    <xacro:property name="mode" value="$(arg mode)"/>
 
     <!-- 	___________Joints Control in Gazebo___________-->	
+   <xacro:macro name="joint_controller" params="joint p i d cmd_max">
 
-  <gazebo>
-    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so"/>
-  </gazebo>
-  <!-- Note that material tags supplied by SolidWorks are used in rviz but ignored by Gazebo -->
-  <gazebo reference="link_1">
-    <material>Gazebo/Turquoise</material>
-  </gazebo>
-  <gazebo reference="link_2">
-    <material>Gazebo/Orange</material>
-  </gazebo>
+    <xacro:if value="${mode == 'position'}">
+      <plugin filename="libignition-gazebo-joint-position-controller-system.so" name="ignition::gazebo::systems::JointPositionController">
+              <joint_name>${joint}</joint_name>
+              <p_gain>${p}</p_gain>
+              <i_gain>${i}</i_gain>
+              <d_gain>${d}</d_gain>
+              <i_max>${cmd_max}</i_max>
+              <i_min>${-cmd_max}</i_min>
+              <cmd_max>${cmd_max}</cmd_max>
+              <cmd_min>${-cmd_max}</cmd_min>
+          </plugin>
+    </xacro:if>
 
-  <!-- Used for fixing robot to Gazebo 'base_link' -->
+    <xacro:if value="${mode == 'velocity'}">
+            <plugin filename="libignition-gazebo-joint-controller-system.so" name="ignition::gazebo::systems::JointController">
+              <joint_name>${joint}</joint_name>
+              <topic>${joint}_cmd_vel</topic>
+          </plugin>
+    </xacro:if>
+   </xacro:macro>
+
+
+   <gazebo>
+    <xacro:joint_controller joint="joint_1" cmd_max="30" p="700" i="0.01" d="10"/>
+    <xacro:joint_controller joint="joint_2" cmd_max="30" p="700" i="0.01" d="10"/>
+   </gazebo>
+
+
+
+  <!-- Used for fixing robot to Gazebo base_link -->
   <link name="world"/>
 
   <joint name="world_joint" type="fixed">
