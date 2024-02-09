@@ -22,7 +22,7 @@
   <!-- Used for fixing robot to Gazebo 'base_link' -->
   <link name="world"/>
   <joint name="world_joint" type="fixed">
-    <origin rpy="0 0. 0" xyz="0. 0 3"/>
+    <origin rpy="0 0. 0" xyz="0. 0 1."/>
     <parent link="world"/>
     <child link="base_link"/>
   </joint>
@@ -110,12 +110,14 @@
     </joint>
     <actuator name="joint_1_actuator"/>
   </transmission>
+  <!--
   <link name="ee_frame"/>
+
   <joint name="ee_joint" type="fixed">
-    <origin xyz="0.28002 0.0 0.071"/>
-    <parent link="link_2"/>
-    <child link="ee_frame"/>
-  </joint>
+  <origin xyz="0.28002 0.0 0.071" />
+    <parent link="link_2" />
+    <child link="ee_frame" />
+  </joint>-->
   <link name="link_2">
     <inertial>
       <origin rpy="0 0 0" xyz="0.082451 0.0 0.045927"/>
@@ -141,8 +143,8 @@
         izz="0.057501" /> 
     </inertial> -->
       <!--    Mass and inertia friction match   -->
-      <mass value="3.181291"/>
-      <inertia ixx="0.013725" ixy="0.00" ixz="0.006881" iyy="0.067471" iyz="0.00" izz="0.2"/>
+      <mass value="7.084761"/>
+      <inertia ixx="0.147885" ixy="0.0000" ixz="-0.033179" iyy="0.196455" iyz="0.0000" izz="0.055095"/>
     </inertial>
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
@@ -185,12 +187,7 @@
       friction="1.5" />
 -->
   </joint>
-  <transmission name="joint_2_transmission">
-    <type>transmission_interface/SimpleTransmission</type>
-    <joint name="joint_2">
-      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
-      <mechanicalReduction>15</mechanicalReduction>
-    </joint>
-    <actuator name="joint_2_actuator"/>
-  </transmission>
+  <gazebo>
+    <plugin filename="libignition-gazebo-joint-state-publisher-system.so" name="ignition::gazebo::systems::JointStatePublisher"/>
+  </gazebo>
 </robot>
