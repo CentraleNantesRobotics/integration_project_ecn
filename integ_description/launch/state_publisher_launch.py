@@ -8,12 +8,12 @@ def generate_launch_description():
     sl.declare_arg('mode', 'position')
     sl.declare_arg('jsp', False)
 
-    sl.robot_state_publisher('integ_description', 'scara_sw.xacro',
-                             xacro_args=sl.arg_map('mode'))
+    with sl.group(ns = 'scara'):
+        sl.robot_state_publisher('integ_description', 'scara_sw.xacro', xacro_args=sl.arg_map('mode'))
+
+        with sl.group(if_arg='jsp'):
+            sl.joint_state_publisher(True)
 
     sl.rviz(sl.find('integ_description', 'config.rviz'))
-
-    with sl.group(if_arg='jsp'):
-        sl.joint_state_publisher(True)
         
     return sl.launch_description()

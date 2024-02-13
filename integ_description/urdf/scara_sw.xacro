@@ -32,6 +32,11 @@
               <topic>${joint}_cmd_vel</topic>
           </plugin>
     </xacro:if>
+    <xacro:if value="${mode == 'effort'}">
+        <plugin filename="libignition-gazebo-apply-joint-force-system.so" name="ignition::gazebo::systems::ApplyJointForce">
+          <joint_name>${joint}</joint_name>
+        </plugin>
+    </xacro:if>
    </xacro:macro>
 
 
@@ -48,12 +53,12 @@
   <joint name="world_joint" type="fixed">
 	<origin xyz="0. 0 $(arg offset)" rpy="0 0. 0"/>
     <parent link="world"/>
-    <child link="base_link"/>
+    <child link="scara/base_link"/>
   </joint>
 
 
 
-  <link name="base_link">
+  <link name="scara/base_link">
     <inertial>
        <origin
          xyz="0 0 0"
@@ -92,8 +97,7 @@
       </geometry>
     </collision>
   </link>
-  <link
-    name="link_1">
+  <link name="scara/link_1">
     <inertial>
       <origin
         xyz="0.066529 0.00 0.179392"
@@ -149,10 +153,8 @@
     <origin
       xyz="0 0 0.049"
       rpy="0 0 -1.57079632679" />
-    <parent
-      link="base_link" />
-    <child
-      link="link_1" />
+    <parent link="scara/base_link" />
+    <child link="scara/link_1" />
     <axis
       xyz="0 0 1" />
 <!-- Velocity limit from motor max 691Rad/s  divided by Nr=15 -->
@@ -187,18 +189,17 @@
       </joint>
       <actuator name="joint_1_actuator"/>
     </transmission>
-<!--
-  <link name="ee_frame"/>
+
+  <link name="scara/ee_frame"/>
 
   <joint name="ee_joint" type="fixed">
   <origin xyz="0.28002 0.0 0.071" />
-    <parent link="link_2" />
-    <child link="ee_frame" />
-  </joint>-->
+    <parent link="scara/link_2" />
+    <child link="scara/ee_frame" />
+  </joint>
 
 
-  <link
-    name="link_2">
+  <link name="scara/link_2">
     <inertial>
       <origin
         xyz="0.082451 0.0 0.045927"
@@ -270,12 +271,9 @@
    <origin
       xyz="0.28002 0.0 0.071"
       rpy="0 0 0" /> 
-    <parent
-      link="link_1" />
-    <child
-      link="link_2" />
-    <axis
-      xyz="0 0 1" />
+    <parent link="scara/link_1" />
+    <child link="scara/link_2" />
+    <axis xyz="0 0 1" />
 <!-- Velocity limit from motor max 691Rad/s  divided by Nr=15 -->
 <!-- Effort limit nominal 2Nm (Abs max=4) from motor spec times Nr=15 
     <limit
@@ -298,7 +296,6 @@
       friction="1.5" />
 -->
   </joint>
-
     <gazebo>
         <plugin filename="libignition-gazebo-joint-state-publisher-system.so" name="ignition::gazebo::systems::JointStatePublisher"/>
 </gazebo>
