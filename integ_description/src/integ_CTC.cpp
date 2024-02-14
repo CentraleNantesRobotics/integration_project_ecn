@@ -9,7 +9,7 @@ public:
         : Node("computed_torque_control") {
 
         // Chemin vers le fichier YAML
-                std::string yaml_file_path = "/chemin/vers/le/fichier/dmi.yml";
+                std::string yaml_file_path = "/params/dmi.yml";
         // Modèle dynamique inverse à partir du fichier YAML
         inverse_dynamics_model_ = loadInverseDynamicsModel(yaml_file_path);
 
