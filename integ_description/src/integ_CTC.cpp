@@ -8,10 +8,12 @@ public:
     ComputedTorqueControl(const std::string& yaml_file_path)
         : Node("computed_torque_control") {
 
-        // Charger le modèle dynamique inverse à partir du fichier YAML
+        // Chemin vers le fichier YAML
+                std::string yaml_file_path = "/chemin/vers/le/fichier/dmi.yml";
+        // Modèle dynamique inverse à partir du fichier YAML
         inverse_dynamics_model_ = loadInverseDynamicsModel(yaml_file_path);
 
-        // Initialiser les abonnements, les publications, le contrôleur, etc.
+        // Initialiser les subscription, les publisher, le contrôleur, etc.
         joint_state_subscriber_ = this->create_subscription<sensor_msgs::msg::JointState>(
             "/scara/joint_states", 10, std::bind(&ComputedTorqueControl::jointStateCallback, this, std::placeholders::_1));
 
@@ -37,13 +39,13 @@ private:
     }
 
     void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr joint_state) {
-        // Mettez à jour les états des joints en fonction de votre robot
+        // Mise à jour des états des joints à faire
         // ...
     }
 
     void controlCallback() {
-        // Calculer le couple en utilisant le contrôle de couple calculé
-        // Utilisez inverse_dynamics_model_ dans votre calcul de contrôle
+        // Calcul du couple en utilisant le contrôle par couple calculé
+        // inverse_dynamics_model_ est à utiliser
         std_msgs::msg::Float64MultiArray computed_torque_msg_joint1;
         std_msgs::msg::Float64MultiArray computed_torque_msg_joint2;
 
@@ -63,16 +65,11 @@ private:
 };
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) {
-        RCLCPP_ERROR(rclcpp::get_logger("computed_torque_control_main"), "Veuillez fournir le chemin vers le fichier YAML.");
-        return 1;
-    }
+        rclcpp::init(0, nullptr);
 
-    rclcpp::init(argc, argv);
+        // Passez le chemin vers le fichier YAML lors de la création du nœud
+        rclcpp::spin(std::make_shared<ComputedTorqueControl>());
 
-    // Passez le chemin vers le fichier YAML lors de la création du nœud
-    rclcpp::spin(std::make_shared<ComputedTorqueControl>(argv[1]));
-
-    rclcpp::shutdown();
-    return 0;
+        rclcpp::shutdown();
+        return 0;
 }
