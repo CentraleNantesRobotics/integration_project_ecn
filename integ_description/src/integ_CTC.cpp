@@ -66,10 +66,7 @@ private:
 
 int main(int argc, char *argv[]) {
         rclcpp::init(0, nullptr);
-
-        // Passez le chemin vers le fichier YAML lors de la création du nœud
         rclcpp::spin(std::make_shared<ComputedTorqueControl>());
-
         rclcpp::shutdown();
         return 0;
 }
