@@ -1,5 +1,9 @@
-#include "rclcpp/rclcpp.hpp"
-#include "sensor_msgs/msg/joint_state.hpp"
+//integ_CTC is a Computed Torque Control node designed for INTEG project for Centrale Nantes Robotics
+//Thibault LEBLANC, Version 1.0.1, February 2024
+
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/node.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
 #include "std_msgs/msg/float64_multi_array.hpp"
 #include "yaml-cpp/yaml.h"
 
