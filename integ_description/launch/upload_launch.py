@@ -28,7 +28,7 @@ def launch_setup():
         bridges.append(GazeboBridge(gz_js_topic, 'joint_states', 'sensor_msgs/JointState', GazeboBridge.gz2ros))
 
         #add a camera bridge
-        bridges.append(GazeboBridge('scara/image', 'image', 'sensor_msgs/Image', GazeboBridge.gz2ros))
+        bridges.append(GazeboBridge('scara/image', '/scara/image', 'sensor_msgs/Image', GazeboBridge.gz2ros))
 
         for joint in ('joint_1', 'joint_2'):
 
