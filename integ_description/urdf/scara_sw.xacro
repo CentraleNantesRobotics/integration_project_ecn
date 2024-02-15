@@ -8,6 +8,8 @@
     <xacro:arg name="offset" default="1."/>
     <xacro:arg name="mode" default="position"/>
 
+    <xacro:include filename="camera.xacro" />  <!--Include the camera.xacro file ADDED BY ME-->
+
     <xacro:property name="mode" value="$(arg mode)"/>
 
     <!-- 	___________Joints Control in Gazebo___________-->	

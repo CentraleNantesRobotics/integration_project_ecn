@@ -11,7 +11,7 @@ def launch_setup():
 
     sl.include('integ_description', 'state_publisher_launch.py',
                launch_arguments = {'use_sim_time': True, 'mode': mode})
-                    
+                        
     # URDF spawner to Gazebo, defaults to relative robot_description topic
 
     with sl.group(ns = 'scara'):
@@ -26,6 +26,9 @@ def launch_setup():
         bridges = []
         gz_js_topic = GazeboBridge.model_prefix('scara') + '/joint_state'
         bridges.append(GazeboBridge(gz_js_topic, 'joint_states', 'sensor_msgs/JointState', GazeboBridge.gz2ros))
+
+        #add a camera bridge
+        bridges.append(GazeboBridge('scara/image', 'image', 'sensor_msgs/Image', GazeboBridge.gz2ros))
 
         for joint in ('joint_1', 'joint_2'):
 
@@ -46,6 +49,7 @@ def launch_setup():
                                             GazeboBridge.ros2gz))
 
         sl.create_gz_bridge(bridges)
+        
 
     return sl.launch_description()
 
