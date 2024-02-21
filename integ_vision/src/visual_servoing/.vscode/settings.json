@@ -1,0 +1,19 @@
+{
+    "cSpell.words": [
+        "servoing"
+    ],
+    "python.autoComplete.extraPaths": [
+        "/home/t-lemmel/Aquabot_Tom/install/my_robot_interfaces/local/lib/python3.10/dist-packages",
+        "/home/t-lemmel/Aquabot_Tom/install/move_ekf/local/lib/python3.10/dist-packages",
+        "/home/t-lemmel/vrx_ws/install/local/lib/python3.10/dist-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/t-lemmel/Aquabot_Tom/install/my_robot_interfaces/local/lib/python3.10/dist-packages",
+        "/home/t-lemmel/Aquabot_Tom/install/move_ekf/local/lib/python3.10/dist-packages",
+        "/home/t-lemmel/vrx_ws/install/local/lib/python3.10/dist-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ]
+}

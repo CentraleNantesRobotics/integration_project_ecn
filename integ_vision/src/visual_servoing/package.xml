@@ -1,0 +1,27 @@
+<package format="3">
+  <name>visual_servoing</name>
+  <version>0.0.0</version>
+  <description>A ROS2 package for visual servoing.</description>
+  <maintainer email="lemmeltom@gmail.com">t-lemmel</maintainer>
+  <license>Insert your license here</license>
+
+
+  <!-- Other dependencies -->
+  <depend>rclpy</depend>
+  <depend>my_robot_interfaces</depend>
+  <depend>std_msgs</depend>
+
+  <!-- These test dependencies are optional
+  Their purpose is to make sure that the code passes the linters -->
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
