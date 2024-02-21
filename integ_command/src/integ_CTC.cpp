@@ -48,8 +48,8 @@ private:
 
 
      void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr joint_state, const sensor_msgs::msg::JointState::SharedPtr desired_joint_state) {
-        double kp;
-        double kd;
+        double kp = 1.;
+        double kd = 1.;
         double pd1 = desired_joint_state->position[1];
         double pd2 = desired_joint_state->position[2];
         double vd1 = desired_joint_state->velocity[1];
