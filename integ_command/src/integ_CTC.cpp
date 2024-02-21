@@ -99,13 +99,13 @@ private:
         estimated_vel(0)=kp*(pd1-real_pos1)-kd*real_vel1;
         estimated_vel(1)=kp*(pd2-real_pos2)-kd*real_vel2;
 
-        Eigen::MatrixXd computed_troque;
+        Eigen::Matrix<double,2,1> computed_troque;
         computed_troque=inertia*estimated_vel+coriolis+gravity;
 
 
 
-        computed_torque_msg_joint1.data = computed_troque(0);
-        computed_torque_msg_joint2.data = computed_troque(1);
+        computed_torque_msg_joint1.data = computed_troque(0,0);
+        computed_torque_msg_joint2.data = computed_troque(1,0);
 
         computed_torque_publisher_joint1_->publish(computed_torque_msg_joint1);
         computed_torque_publisher_joint2_->publish(computed_torque_msg_joint2);
