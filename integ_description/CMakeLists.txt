@@ -13,6 +13,5 @@ include_directories(${sensor_msgs_INCLUDE_DIRS})
 
 install(DIRECTORY launch meshes urdf DESTINATION share/${PROJECT_NAME})
 
-add_executable(integ_CTC src/integ_CTC)
 
 ament_package()

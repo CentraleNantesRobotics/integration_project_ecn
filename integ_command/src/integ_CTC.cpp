@@ -1,5 +1,5 @@
 //integ_CTC is a Computed Torque Control node designed for INTEG project for Centrale Nantes Robotics
-//Thibault LEBLANC, Version 1.0.1, February 2024
+//Thibault LEBLANC & Julien COUPEAUX, Version 1.0.2, February 2024
 
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/node.hpp>
@@ -9,7 +9,7 @@
 
 class ComputedTorqueControl : public rclcpp::Node {
 public:
-    ComputedTorqueControl(const std::string& yaml_file_path)
+    ComputedTorqueControl()
         : Node("computed_torque_control") {
 
         // Chemin vers le fichier YAML
@@ -43,8 +43,16 @@ private:
     }
 
     void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr joint_state) {
-        // Mise à jour des états des joints à faire
-        // ...
+        double kp;
+        double kd;
+        double pd1, pd2;
+        double vd1, vd2;
+        double real_pos1, real_pos2;
+        double real_vel1, real_vel2;
+
+        real_pos1 = joint_state->position[1];
+        real_pos2 = joint_state->position[2];
+
     }
 
     void controlCallback() {
