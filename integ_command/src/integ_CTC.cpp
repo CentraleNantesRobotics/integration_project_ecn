@@ -48,30 +48,34 @@ private:
 
 
      void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr joint_state, const sensor_msgs::msg::JointState::SharedPtr desired_joint_state) {
+        //définition des gains
         double kp = 1.;
         double kd = 1.;
+        //définition des angles et vitesses désirées
         double pd1 = desired_joint_state->position[1];
         double pd2 = desired_joint_state->position[2];
         double vd1 = desired_joint_state->velocity[1];
         double vd2 = desired_joint_state->velocity[2];
-
+        //définition de l'état
         double real_pos1 = joint_state->position[1];
         double real_pos2 = joint_state->position[2];
         double real_vel1 = joint_state->velocity[1];
         double real_vel2 = joint_state->velocity[2];
-
+        //définition des variables
         double g = 0;
         double m1=1.;
         double m2=1.;
         double l1=1.;
-
         double l2=1.;
+
+        //définition de la matrice de gravité
         std::vector<std::vector<double>> gravity;
         double g11 =-1*(m1+m2)*g*l1*sin(real_pos1)-m2*g*l2*sin(real_pos1+real_pos2);
         double g22 =-1*m2*g*l2*sin(real_pos1+real_pos2);
         gravity[0][0]=g11;
         gravity[1][0]=g22;
 
+        //définition de la matrice d'intertie
         std::vector<std::vector<double>> inertia;
         double i11 = (m1+m2)*l1*l1+m2*l2*l2+2*m2*l1*l2*cos(real_pos2);
         double i12 = m2*l2*l2+m2*l1*l2*cos(real_pos2);
@@ -82,6 +86,7 @@ private:
         inertia[1][0]=i21;
         inertia[1][1]=i22;
 
+        //définition de la matrice de coriolis
         std::vector<std::vector<double>> coriolis;
         double c11 =-1*m2*l1*l2*(2*real_vel1*real_vel2+real_vel1*real_vel1)*sin(real_pos2);
         double c22 =-1*m2*l1*l2*real_vel1*real_vel2*sin(real_pos2);
