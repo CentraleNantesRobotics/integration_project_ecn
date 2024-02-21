@@ -1,0 +1,4 @@
+source;share/integ_command/local_setup.bash
+source;share/integ_command/local_setup.dsv
+source;share/integ_command/local_setup.sh
+source;share/integ_command/local_setup.zsh

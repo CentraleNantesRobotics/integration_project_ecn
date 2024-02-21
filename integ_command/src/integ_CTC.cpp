@@ -6,6 +6,7 @@
 #include <sensor_msgs/msg/joint_state.hpp>
 #include "std_msgs/msg/float64_multi_array.hpp"
 #include "yaml-cpp/yaml.h"
+#include <Eigen>
 
 class ComputedTorqueControl : public rclcpp::Node {
 public:
@@ -99,6 +100,9 @@ private:
         // inverse_dynamics_model_ est à utiliser
         std_msgs::msg::Float64MultiArray computed_torque_msg_joint1;
         std_msgs::msg::Float64MultiArray computed_torque_msg_joint2;
+
+        std::vector<std::vector<double>> control_vector;
+        control_vector=
 
         // computed_torque_msg_joint1.data = computed_torque_calculation_function_joint1(inverse_dynamics_model_);
         // computed_torque_msg_joint2.data = computed_torque_calculation_function_joint2(inverse_dynamics_model_);
