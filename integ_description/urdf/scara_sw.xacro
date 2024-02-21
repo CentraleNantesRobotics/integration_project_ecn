@@ -149,6 +149,7 @@
       </geometry>
     </collision>
   </link>
+
   <joint
     name="joint_1"
     type="revolute">
@@ -181,6 +182,7 @@
       damping="0.4"
       friction="0.9" />
   </joint>
+
    <!-- Required for ROS control -->
    
     <transmission name="joint_1_transmission">
@@ -195,7 +197,7 @@
   <link name="scara/ee_frame"/>
 
   <joint name="ee_joint" type="fixed">
-  <origin xyz="0.28002 0.0 0.071" />
+  <origin xyz="0.28002 0.0 0.03" />
     <parent link="scara/link_2" />
     <child link="scara/ee_frame" />
   </joint>
