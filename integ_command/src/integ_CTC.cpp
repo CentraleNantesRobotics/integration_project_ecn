@@ -17,6 +17,10 @@ public:
         // Modèle dynamique inverse à partir du fichier YAML
         inverse_dynamics_model_ = loadInverseDynamicsModel(yaml_file_path);
 
+
+        desired_jointstate_subscriber_ = this->create_subscription<sensor_msgs::msg::JointState>(
+                    "/scara/desired_joint_states", 10, std::bind(&ComputedTorqueControl::jointStateCallback, this, std::placeholders::_1)); // A revoir en fonction du nom des topics des gens qui font la trajectoire
+
         // Initialiser les subscription, les publisher, le contrôleur, etc.
         joint_state_subscriber_ = this->create_subscription<sensor_msgs::msg::JointState>(
             "/scara/joint_states", 10, std::bind(&ComputedTorqueControl::jointStateCallback, this, std::placeholders::_1));
@@ -42,17 +46,19 @@ private:
         }
     }
 
-    void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr joint_state) {
+
+     void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr joint_state, const sensor_msgs::msg::JointState::SharedPtr desired_joint_state) {
         double kp;
         double kd;
-        double pd1, pd2;
-        double vd1, vd2;
-        double real_pos1, real_pos2;
-        double real_vel1, real_vel2;
+        double pd1 = desired_joint_state->position[1];
+        double pd2 = desired_joint_state->position[2];
+        double vd1 = desired_joint_state->velocity[1];
+        double vd2 = desired_joint_state->velocity[2];
 
-        real_pos1 = joint_state->position[1];
-        real_pos2 = joint_state->position[2];
-
+        double real_pos1 = joint_state->position[1];
+        double real_pos2 = joint_state->position[2];
+        double real_vel1 = joint_state->velocity[1];
+        double real_vel2 = joint_state->velocity[2];
     }
 
     void controlCallback() {
@@ -69,6 +75,7 @@ private:
     }
 
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_subscriber_;
+    rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr desired_jointstate_subscriber_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr computed_torque_publisher_joint1_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr computed_torque_publisher_joint2_;
     rclcpp::TimerBase::SharedPtr controlTimer_;
