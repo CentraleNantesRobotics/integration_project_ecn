@@ -59,6 +59,14 @@ private:
         double real_pos2 = joint_state->position[2];
         double real_vel1 = joint_state->velocity[1];
         double real_vel2 = joint_state->velocity[2];
+
+        double m1;
+        double m2;
+        double l1;
+        double l2;
+        std::vector<std::vector<double>> gravity;
+        std::vector<std::vector<double>> inertia;
+        std::vector<std::vector<double>> coriolis;
     }
 
     void controlCallback() {
