@@ -73,18 +73,18 @@ private:
         gravity[1][0]=g22;
 
         std::vector<std::vector<double>> inertia;
-        double i11 =;
-        double i12 =;
-        double i21 =;
-        double i22 =;
+        double i11 = (m1+m2)*l1*l1+m2*l2*l2+2*m2*l1*l2*cos(real_pos2);
+        double i12 = m2*l2*l2+m2*l1*l2*cos(real_pos2);
+        double i21 = i12;
+        double i22 = m2*l2*l2;
         inertia[0][0]=i11;
         inertia[0][1]=i12;
         inertia[1][0]=i21;
         inertia[1][1]=i22;
 
         std::vector<std::vector<double>> coriolis;
-        double c11 =-1*(m1+m2)*g*l1*sin(real_pos1)-m2*g*l2*sin(real_pos1+real_pos2);
-        double c22 =-1*m2*g*l2*sin(real_pos1+real_pos2);
+        double c11 =-1*m2*l1*l2*(2*real_vel1*real_vel2+real_vel1*real_vel1)*sin(real_pos2);
+        double c22 =-1*m2*l1*l2*real_vel1*real_vel2*sin(real_pos2);
         coriolis[0][0]=c11;
         coriolis[1][0]=c22;
     }
