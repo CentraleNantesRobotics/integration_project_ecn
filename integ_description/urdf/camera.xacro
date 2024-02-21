@@ -4,18 +4,21 @@
     <joint name="camera" type="fixed">
         <parent link="scara/ee_frame"/>
         <child link="scara/camera"/>
-        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <origin xyz="0 0 0" rpy="0 ${pi/2} 0"/>
     </joint>
 
     <link name="scara/camera">
-    <visual>
-        <geometry>
-            <box size="0.1 0.1 0.1"/>
-        </geometry>
-        <material name="red"/>
-    </visual>
+    <inertial>
+    <mass value="0.015"/>
+    <inertia
+    ixx="0.001"
+    ixy="0.0"
+    ixz="0.0"
+    iyy="0.001"
+    iyz="0"
+    izz="0.001"/>
+    </inertial>
     </link>
-
 
     <joint name="camera_optical" type="fixed">
         <parent link="scara/camera" />
@@ -23,7 +26,22 @@
         <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}" />
     </joint>
 
-    <link name="scara/camera_optical"></link>
+    <link name="scara/camera_optical">
+    <visual>
+        <geometry>
+            <cylinder length="0.1" radius="0.02"/>
+        </geometry>
+        <material name="blue"/>
+    </visual>
+        <visual>
+            <origin xyz="0 0 0.05"/>
+        <geometry>
+            <cylinder length="0.02" radius="0.03"/>
+        </geometry>
+        <material name="blue"/>
+    </visual>
+
+        </link>
 
 <gazebo reference="scara/camera">
   <sensor name="camera" type="camera">
@@ -35,7 +53,7 @@
         <height>400</height>
     </image>
     <clip>
-        <near>0.3</near>
+        <near>0.05</near>
         <far>100</far>
     </clip>
     </camera>

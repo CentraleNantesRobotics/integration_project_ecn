@@ -3,14 +3,14 @@
 
   <xacro:arg name="vel" default="1."/>
 
-  <xacro:property name="offset" default=".4"/>
+  <xacro:property name="offset" default=".5"/>
   <xacro:property name="radius" default=".1"/>
-  <xacro:property name="size" default=".03"/>
+  <xacro:property name="size" default=".02"/>
 
   <link name="world"/>
 
   <joint name="world_joint" type="fixed">
-	<origin xyz="0 ${-offset} 1.1" rpy="0 0. 0"/>
+	<origin xyz="0 ${-offset} 1" rpy="0 0. 0"/>
     <parent link="world"/>
     <child link="target/base_link"/>
   </joint>
