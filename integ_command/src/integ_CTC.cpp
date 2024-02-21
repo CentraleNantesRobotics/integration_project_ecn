@@ -60,13 +60,33 @@ private:
         double real_vel1 = joint_state->velocity[1];
         double real_vel2 = joint_state->velocity[2];
 
-        double m1;
-        double m2;
-        double l1;
-        double l2;
+        double g = 0;
+        double m1=1.;
+        double m2=1.;
+        double l1=1.;
+
+        double l2=1.;
         std::vector<std::vector<double>> gravity;
+        double g11 =-1*(m1+m2)*g*l1*sin(real_pos1)-m2*g*l2*sin(real_pos1+real_pos2);
+        double g22 =-1*m2*g*l2*sin(real_pos1+real_pos2);
+        gravity[0][0]=g11;
+        gravity[1][0]=g22;
+
         std::vector<std::vector<double>> inertia;
+        double i11 =;
+        double i12 =;
+        double i21 =;
+        double i22 =;
+        inertia[0][0]=i11;
+        inertia[0][1]=i12;
+        inertia[1][0]=i21;
+        inertia[1][1]=i22;
+
         std::vector<std::vector<double>> coriolis;
+        double c11 =-1*(m1+m2)*g*l1*sin(real_pos1)-m2*g*l2*sin(real_pos1+real_pos2);
+        double c22 =-1*m2*g*l2*sin(real_pos1+real_pos2);
+        coriolis[0][0]=c11;
+        coriolis[1][0]=c22;
     }
 
     void controlCallback() {
