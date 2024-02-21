@@ -6,17 +6,12 @@
 #include <sensor_msgs/msg/joint_state.hpp>
 #include "std_msgs/msg/float64_multi_array.hpp"
 #include "yaml-cpp/yaml.h"
-#include <Eigen>
+#include <Eigen/Core>
 
 class ComputedTorqueControl : public rclcpp::Node {
 public:
     ComputedTorqueControl()
         : Node("computed_torque_control") {
-
-        // Chemin vers le fichier YAML
-                std::string yaml_file_path = "/params/dmi.yml";
-        // Modèle dynamique inverse à partir du fichier YAML
-        inverse_dynamics_model_ = loadInverseDynamicsModel(yaml_file_path);
 
 
         desired_jointstate_subscriber_ = this->create_subscription<sensor_msgs::msg::JointState>(
@@ -33,7 +28,7 @@ public:
             "/scara/computed_torque_joint2", 10);
 
         controlTimer_ = this->create_wall_timer(
-            std::chrono::milliseconds(10), std::bind(&ComputedTorqueControl::controlCallback, this));
+            std::chrono::milliseconds(10), std::bind(&ComputedTorqueControl::jointStateCallback, this));
     }
 
 private:
@@ -70,42 +65,47 @@ private:
         double l2=1.;
 
         //définition de la matrice de gravité
-        std::vector<std::vector<double>> gravity;
+        Eigen::MatrixXd gravity;
         double g11 =-1*(m1+m2)*g*l1*sin(real_pos1)-m2*g*l2*sin(real_pos1+real_pos2);
         double g22 =-1*m2*g*l2*sin(real_pos1+real_pos2);
-        gravity[0][0]=g11;
-        gravity[1][0]=g22;
+        gravity(0,0)=g11;
+        gravity(1,0)=g22;
 
         //définition de la matrice d'intertie
-        std::vector<std::vector<double>> inertia;
+        Eigen::MatrixXd inertia;
         double i11 = (m1+m2)*l1*l1+m2*l2*l2+2*m2*l1*l2*cos(real_pos2);
         double i12 = m2*l2*l2+m2*l1*l2*cos(real_pos2);
         double i21 = i12;
         double i22 = m2*l2*l2;
-        inertia[0][0]=i11;
-        inertia[0][1]=i12;
-        inertia[1][0]=i21;
-        inertia[1][1]=i22;
+        inertia(0,0)=i11;
+        inertia(0,1)=i12;
+        inertia(1,0)=i21;
+        inertia(1,1)=i22;
 
         //définition de la matrice de coriolis
-        std::vector<std::vector<double>> coriolis;
+        Eigen::MatrixXd coriolis;
         double c11 =-1*m2*l1*l2*(2*real_vel1*real_vel2+real_vel1*real_vel1)*sin(real_pos2);
         double c22 =-1*m2*l1*l2*real_vel1*real_vel2*sin(real_pos2);
-        coriolis[0][0]=c11;
-        coriolis[1][0]=c22;
-    }
+        coriolis(0,0)=c11;
+        coriolis(1,0)=c22;
 
-    void controlCallback() {
+
         // Calcul du couple en utilisant le contrôle par couple calculé
         // inverse_dynamics_model_ est à utiliser
         std_msgs::msg::Float64MultiArray computed_torque_msg_joint1;
         std_msgs::msg::Float64MultiArray computed_torque_msg_joint2;
 
-        std::vector<std::vector<double>> control_vector;
-        control_vector=
+        Eigen::MatrixXd  estimated_vel;
+        estimated_vel(0)=kp*(pd1-real_pos1)-kd*real_vel1;
+        estimated_vel(1)=kp*(pd2-real_pos2)-kd*real_vel2;
 
-        // computed_torque_msg_joint1.data = computed_torque_calculation_function_joint1(inverse_dynamics_model_);
-        // computed_torque_msg_joint2.data = computed_torque_calculation_function_joint2(inverse_dynamics_model_);
+        Eigen::MatrixXd computed_troque;
+        computed_troque=inertia*estimated_vel+coriolis+gravity;
+
+
+
+        computed_torque_msg_joint1.data = computed_troque(0);
+        computed_torque_msg_joint2.data = computed_troque(1);
 
         computed_torque_publisher_joint1_->publish(computed_torque_msg_joint1);
         computed_torque_publisher_joint2_->publish(computed_torque_msg_joint2);
@@ -121,7 +121,7 @@ private:
 };
 
 int main(int argc, char *argv[]) {
-        rclcpp::init(0, nullptr);
+        rclcpp::init(argc, argv);
         rclcpp::spin(std::make_shared<ComputedTorqueControl>());
         rclcpp::shutdown();
         return 0;

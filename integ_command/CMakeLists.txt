@@ -15,11 +15,13 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 
+find_package(Eigen3)
+
 set(CMAKE_CXX_STANDARD 17)
 
 
 include_directories(${sensor_msgs_INCLUDE_DIRS})
-include_directories(include/ )
+include_directories(include/ ${EIGEN3_INCLUDE_DIRS})
 
 
 
