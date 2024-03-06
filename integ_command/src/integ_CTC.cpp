@@ -1,13 +1,13 @@
-//integ_CTC is a Computed Torque Control node designed for INTEG project for Centrale Nantes Robotics
+﻿//integ_CTC is a Computed Torque Control node designed for INTEG project for Centrale Nantes Robotics
 //Thibault LEBLANC & Julien COUPEAUX, Version 1.0.3, March 2024
 
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/node.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include "std_msgs/msg/float64_multi_array.hpp"
+#include "std_msgs/msg/float64.hpp"
 #include "yaml-cpp/yaml.h"
 #include <Eigen/Core>
-
 using namespace std::placeholders;
 
 class ComputedTorqueControl : public rclcpp::Node {
@@ -23,14 +23,28 @@ public:
                     "/scara/desired_joint_states",
                     10,
                     [this](const sensor_msgs::msg::JointState::SharedPtr msg) {
-                        jointStateCallback(msg, nullptr);
+                        jointStateCallback(msg, nullptr, nullptr, nullptr);
                     }); // A revoir en fonction du nom des topics des gens qui font la trajectoire
 
         joint_state_subscriber_ = create_subscription<sensor_msgs::msg::JointState>(
                     "/scara/joint_states",
                     10,
                     [this](const sensor_msgs::msg::JointState::SharedPtr msg) {
-                        jointStateCallback(msg, nullptr);
+                        jointStateCallback(msg, nullptr, nullptr, nullptr);
+                    });
+
+        kp_ = create_subscription<std_msgs::msg::Float64>(
+                    "/scara/kp",
+                    10,
+                    [this](const std_msgs::msg::Float64::SharedPtr msg) {
+             jointStateCallback(nullptr, nullptr, msg, nullptr);
+        });
+
+        kd_ = create_subscription<std_msgs::msg::Float64>(
+                    "/scara/kd",
+                    10,
+                    [this](const std_msgs::msg::Float64::SharedPtr msg) {
+             jointStateCallback(nullptr, nullptr, nullptr, msg);
                     });
 
         computed_torque_publisher_joint1_ = this->create_publisher<std_msgs::msg::Float64MultiArray>(
@@ -38,14 +52,12 @@ public:
 
         computed_torque_publisher_joint2_ = this->create_publisher<std_msgs::msg::Float64MultiArray>(
             "/scara/computed_torque_joint2", 10);
-    }
+}
 
 private:
 
-     void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr joint_state, const sensor_msgs::msg::JointState::SharedPtr desired_joint_state) {
-        //définition des gains
-        double kp = 1.;
-        double kd = 1.;
+     void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr joint_state, const sensor_msgs::msg::JointState::SharedPtr desired_joint_state, const std_msgs::msg::Float64::SharedPtr kp, const std_msgs::msg::Float64::SharedPtr kd) {
+
         //définition des angles et vitesses désirées
         double pd1 = desired_joint_state->position[1];
         double pd2 = desired_joint_state->position[2];
@@ -83,10 +95,10 @@ private:
         parameters(6)=Fv2;
 
         //définition des erreurs
-        double e1=(pd1-real_pos1)*kp;
-        double e2=(pd2-real_pos2)*kp;
-        double ev1=(vd1-real_vel1)*kd;
-        double ev2=(vd2-real_vel2)*kd;
+        double e1=(pd1-real_pos1)*kp->data;
+        double e2=(pd2-real_pos2)*kp->data;
+        double ev1=(vd1-real_vel1)*kd->data;
+        double ev2=(vd2-real_vel2)*kd->data;
 
         //définition de la matrice d'intertie
         Eigen::MatrixXd model;
@@ -123,8 +135,11 @@ private:
 
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_subscriber_;
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr desired_jointstate_subscriber_;
+    rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr kp_;
+    rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr kd_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr computed_torque_publisher_joint1_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr computed_torque_publisher_joint2_;
+
     rclcpp::TimerBase::SharedPtr controlTimer_;
 
     std::vector<std::vector<double>> inverse_dynamics_model_;
