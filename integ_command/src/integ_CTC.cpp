@@ -8,6 +8,8 @@
 #include "yaml-cpp/yaml.h"
 #include <Eigen/Core>
 
+using namespace std::placeholders;
+
 class ComputedTorqueControl : public rclcpp::Node {
 public:
     ComputedTorqueControl()
@@ -16,11 +18,19 @@ public:
         // Initialisation des subscriptions, des publishers
 
 
-        desired_jointstate_subscriber_ = this->create_subscription<sensor_msgs::msg::JointState>(
-                    "/scara/desired_joint_states", 10, std::bind(&ComputedTorqueControl::jointStateCallback, this, std::placeholders::_1, nullptr)); // A revoir en fonction du nom des topics des gens qui font la trajectoire
+        desired_jointstate_subscriber_ = create_subscription<sensor_msgs::msg::JointState>(
+                    "/scara/desired_joint_states",
+                    10,
+                    [this](const sensor_msgs::msg::JointState::SharedPtr msg) {
+                        jointStateCallback(msg, nullptr);
+                    }); // A revoir en fonction du nom des topics des gens qui font la trajectoire
 
-        joint_state_subscriber_ = this->create_subscription<sensor_msgs::msg::JointState>(
-            "/scara/joint_states", 10, std::bind(&ComputedTorqueControl::jointStateCallback, this, std::placeholders::_1, nullptr));
+        joint_state_subscriber_ = create_subscription<sensor_msgs::msg::JointState>(
+                    "/scara/joint_states",
+                    10,
+                    [this](const sensor_msgs::msg::JointState::SharedPtr msg) {
+                        jointStateCallback(msg, nullptr);
+                    });
 
         computed_torque_publisher_joint1_ = this->create_publisher<std_msgs::msg::Float64MultiArray>(
             "/scara/computed_torque_joint1", 10);
