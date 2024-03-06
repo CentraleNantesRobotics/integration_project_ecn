@@ -29,16 +29,6 @@ public:
     }
 
 private:
-    std::vector<std::vector<double>> loadInverseDynamicsModel(const std::string& yaml_file_path) {
-        try {
-            YAML::Node config = YAML::LoadFile(yaml_file_path);
-            return config["inverse_dynamics_model"].as<std::vector<std::vector<double>>>();
-        } catch (const YAML::Exception& e) {
-            RCLCPP_ERROR(this->get_logger(), "Erreur lors de la lecture du fichier YAML : %s", e.what());
-            return {};
-        }
-    }
-
 
      void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr joint_state, const sensor_msgs::msg::JointState::SharedPtr desired_joint_state) {
         //définition des gains
