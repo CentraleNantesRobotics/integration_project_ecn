@@ -1,5 +1,5 @@
 //integ_CTC is a Computed Torque Control node designed for INTEG project for Centrale Nantes Robotics
-//Thibault LEBLANC & Julien COUPEAUX, Version 1.0.2, February 2024
+//Thibault LEBLANC & Julien COUPEAUX, Version 1.0.3, March 2024
 
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/node.hpp>
@@ -13,11 +13,12 @@ public:
     ComputedTorqueControl()
         : Node("computed_torque_control") {
 
+        // Initialisation des subscriptions, des publishers
+
 
         desired_jointstate_subscriber_ = this->create_subscription<sensor_msgs::msg::JointState>(
                     "/scara/desired_joint_states", 10, std::bind(&ComputedTorqueControl::jointStateCallback, this, std::placeholders::_1, nullptr)); // A revoir en fonction du nom des topics des gens qui font la trajectoire
 
-        // Initialiser les subscription, les publisher, le contrôleur, etc.
         joint_state_subscriber_ = this->create_subscription<sensor_msgs::msg::JointState>(
             "/scara/joint_states", 10, std::bind(&ComputedTorqueControl::jointStateCallback, this, std::placeholders::_1, nullptr));
 
