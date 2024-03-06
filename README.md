@@ -24,7 +24,7 @@ Download the projet to your ROS 2 workspace
 Compile with `colcon`
 ```
 $ cd ~
-$ git clone https://https://github.com/CentraleNantesRobotics/integration_project_ecn
+$ git clone https://https://github.com/CentraleNantesRobotics/integration_project_ecn -b ros2
 $ cd integration_project_ecn
 $ colcon build
-$ source devel/setup.bash
+$ source install/setup.bash
