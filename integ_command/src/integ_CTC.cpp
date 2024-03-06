@@ -52,7 +52,7 @@ private:
         double l2=1.;
 
         //définition de la matrice de gravité
-        Eigen::Matrix2d gravity;
+        Eigen::Vector2d gravity;
         double g11 =-1*(m1+m2)*g*l1*sin(real_pos1)-m2*g*l2*sin(real_pos1+real_pos2);
         double g22 =-1*m2*g*l2*sin(real_pos1+real_pos2);
         gravity(0,0)=g11;
@@ -70,7 +70,7 @@ private:
         inertia(1,1)=i22;
 
         //définition de la matrice de coriolis
-        Eigen::Matrix2d coriolis;
+        Eigen::Vector2d coriolis;
         double c11 =-1*m2*l1*l2*(2*real_vel1*real_vel2+real_vel1*real_vel1)*sin(real_pos2);
         double c22 =-1*m2*l1*l2*real_vel1*real_vel2*sin(real_pos2);
         coriolis(0,0)=c11;
