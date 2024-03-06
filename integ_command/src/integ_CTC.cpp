@@ -15,20 +15,17 @@ public:
 
 
         desired_jointstate_subscriber_ = this->create_subscription<sensor_msgs::msg::JointState>(
-                    "/scara/desired_joint_states", 10, std::bind(&ComputedTorqueControl::jointStateCallback, this, std::placeholders::_1)); // A revoir en fonction du nom des topics des gens qui font la trajectoire
+                    "/scara/desired_joint_states", 10, std::bind(&ComputedTorqueControl::jointStateCallback, this, std::placeholders::_1, nullptr)); // A revoir en fonction du nom des topics des gens qui font la trajectoire
 
         // Initialiser les subscription, les publisher, le contrôleur, etc.
         joint_state_subscriber_ = this->create_subscription<sensor_msgs::msg::JointState>(
-            "/scara/joint_states", 10, std::bind(&ComputedTorqueControl::jointStateCallback, this, std::placeholders::_1));
+            "/scara/joint_states", 10, std::bind(&ComputedTorqueControl::jointStateCallback, this, std::placeholders::_1, nullptr));
 
         computed_torque_publisher_joint1_ = this->create_publisher<std_msgs::msg::Float64MultiArray>(
             "/scara/computed_torque_joint1", 10);
 
         computed_torque_publisher_joint2_ = this->create_publisher<std_msgs::msg::Float64MultiArray>(
             "/scara/computed_torque_joint2", 10);
-
-        controlTimer_ = this->create_wall_timer(
-            std::chrono::milliseconds(10), std::bind(&ComputedTorqueControl::jointStateCallback, this));
     }
 
 private:
@@ -65,14 +62,14 @@ private:
         double l2=1.;
 
         //définition de la matrice de gravité
-        Eigen::MatrixXd gravity;
+        Eigen::Matrix2d gravity;
         double g11 =-1*(m1+m2)*g*l1*sin(real_pos1)-m2*g*l2*sin(real_pos1+real_pos2);
         double g22 =-1*m2*g*l2*sin(real_pos1+real_pos2);
         gravity(0,0)=g11;
         gravity(1,0)=g22;
 
         //définition de la matrice d'intertie
-        Eigen::MatrixXd inertia;
+        Eigen::Matrix2d inertia;
         double i11 = (m1+m2)*l1*l1+m2*l2*l2+2*m2*l1*l2*cos(real_pos2);
         double i12 = m2*l2*l2+m2*l1*l2*cos(real_pos2);
         double i21 = i12;
@@ -83,7 +80,7 @@ private:
         inertia(1,1)=i22;
 
         //définition de la matrice de coriolis
-        Eigen::MatrixXd coriolis;
+        Eigen::Matrix2d coriolis;
         double c11 =-1*m2*l1*l2*(2*real_vel1*real_vel2+real_vel1*real_vel1)*sin(real_pos2);
         double c22 =-1*m2*l1*l2*real_vel1*real_vel2*sin(real_pos2);
         coriolis(0,0)=c11;
@@ -95,17 +92,17 @@ private:
         std_msgs::msg::Float64MultiArray computed_torque_msg_joint1;
         std_msgs::msg::Float64MultiArray computed_torque_msg_joint2;
 
-        Eigen::MatrixXd  estimated_vel;
+        Eigen::Vector2d estimated_vel;
         estimated_vel(0)=kp*(pd1-real_pos1)-kd*real_vel1;
         estimated_vel(1)=kp*(pd2-real_pos2)-kd*real_vel2;
 
-        Eigen::Matrix<double,2,1> computed_troque;
+        Eigen::Vector2d computed_troque;
         computed_troque=inertia*estimated_vel+coriolis+gravity;
 
 
 
-        computed_torque_msg_joint1.data = computed_troque(0,0);
-        computed_torque_msg_joint2.data = computed_troque(1,0);
+        computed_torque_msg_joint1.data[0] = computed_troque(0,0);
+        computed_torque_msg_joint2.data[0] = computed_troque(1,0);
 
         computed_torque_publisher_joint1_->publish(computed_torque_msg_joint1);
         computed_torque_publisher_joint2_->publish(computed_torque_msg_joint2);
