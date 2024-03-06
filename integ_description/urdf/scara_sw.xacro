@@ -63,15 +63,15 @@
   <link name="scara/base_link">
     <inertial>
        <origin
-         xyz="0 0 0"
+         xyz="-0.00017 -0.1379088 0.000419"
         rpy="0 0 -1.57079632679" />
       <mass
         value="15.137" />
       <inertia
-        ixx="1.1561"
+        ixx="1.156125"
         ixy="0.00079443"
         ixz="-5.3686E-06"
-        iyy="1.1282"
+        iyy="1.128704"
         iyz="-0.004763"
         izz="2.2914" />
     </inertial>
