@@ -12,6 +12,7 @@ using namespace std::placeholders;
 
 class ComputedTorqueControl : public rclcpp::Node {
 public:
+
     ComputedTorqueControl()
         : Node("computed_torque_control") {
 
@@ -83,10 +84,10 @@ private:
         parameters(6)=Fv1;
 
         //définition des erreurs
-        double e1=pd1-real_pos1;
-        double e2=pd2-real_pos2;
-        double ev1=vd1-real_vel1;
-        double ev2=vd2-real_vel2;
+        double e1=(pd1-real_pos1)*kp;
+        double e2=(pd2-real_pos2)*kp;
+        double ev1=(vd1-real_vel1)*kd;
+        double ev2=(vd2-real_vel2)*kd;
 
         //définition de la matrice d'intertie
         Eigen::MatrixXd model;
@@ -95,6 +96,15 @@ private:
         model(0,1)=model(1,1)=ad1+ad2;
         model(0,2)=l1*(2*cos(e2)*ad1+cos(e2)*ad2-sin(e2)*ev2*ev2-2*sin(e2)*ev1*ev2)+g*cos(e1+e2);
         model(1,2)=l1*(cos(e2)*ad1+sin(e2)*ev1*ev1)+g*cos(e1+e2);
+        model(0,3)=g*cos(e1);
+        model(1,3)=0;
+        model(0,4)=ev1;
+        model(1,4)=0;
+        model(0,5)=0;
+        auto signe = [](double x) { return (x >= 0) ? 1 : -1; };
+        model(1,5)=signe(ev2);
+        model(0,6)=0;
+        model(1,6)=ev2;
 
 
         // Calcul du couple en utilisant le contrôle par couple calculé
@@ -102,14 +112,8 @@ private:
         std_msgs::msg::Float64MultiArray computed_torque_msg_joint1;
         std_msgs::msg::Float64MultiArray computed_torque_msg_joint2;
 
-        Eigen::Vector2d estimated_vel;
-        estimated_vel(0)=kp*(pd1-real_pos1)-kd*real_vel1;
-        estimated_vel(1)=kp*(pd2-real_pos2)-kd*real_vel2;
-
         Eigen::Vector2d computed_troque;
-        computed_troque=inertia*estimated_vel+coriolis+gravity;
-
-
+        computed_troque=model*parameters;
 
         computed_torque_msg_joint1.data[0] = computed_troque(0,0);
         computed_torque_msg_joint2.data[0] = computed_troque(1,0);
