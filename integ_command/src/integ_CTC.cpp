@@ -50,6 +50,8 @@ private:
         double pd2 = desired_joint_state->position[2];
         double vd1 = desired_joint_state->velocity[1];
         double vd2 = desired_joint_state->velocity[2];
+        double ad1 = desired_joint_state->effort[1];
+        double ad2 = desired_joint_state->effort[2];
         //définition de l'état
         double real_pos1 = joint_state->position[1];
         double real_pos2 = joint_state->position[2];
@@ -57,10 +59,23 @@ private:
         double real_vel2 = joint_state->velocity[2];
         //définition des variables
         double g = 0;
-        double m1=1.;
-        double m2=1.;
-        double l1=1.;
-        double l2=1.;
+        double m1 = 7.1 ;
+        double m2 = 3.18 ;
+        double I1 = 0.0237 ;
+        double I2 = 0.0359 ;
+        double c1 = 0.066 ;
+        double c2 = 0.0825 ;
+        double n1 = 15 ;
+        double n2 = 15 ;
+        double Ia1 = 38e-6 ;
+        double Ia2 = 38e-6 ;
+        double l1 = 0.28 ;
+        double l2 = 0.28 ;
+
+        double zz1 = I1 + m1*c1*c1 ;
+        double zz2 = I2 + m2*c2*c2 ;
+        double mx1 = m1*c1 ;
+        double mx2 = m2*c2 ;
 
         //définition de la matrice de gravité
         Eigen::Vector2d gravity;
