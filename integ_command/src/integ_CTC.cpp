@@ -82,9 +82,20 @@ private:
         parameters(5)=Fs2;
         parameters(6)=Fv1;
 
+        //définition des erreurs
+        double e1=pd1-real_pos1;
+        double e2=pd2-real_pos2;
+        double ev1=vd1-real_vel1;
+        double ev2=vd2-real_vel2;
+
         //définition de la matrice d'intertie
         Eigen::MatrixXd model;
-        model(0,0)=i11;
+        model(0,0)=ad1;
+        model(1,0)=0;
+        model(0,1)=model(1,1)=ad1+ad2;
+        model(0,2)=l1*(2*cos(e2)*ad1+cos(e2)*ad2-sin(e2)*ev2*ev2-2*sin(e2)*ev1*ev2)+g*cos(e1+e2);
+        model(1,2)=l1*(cos(e2)*ad1+sin(e2)*ev1*ev1)+g*cos(e1+e2);
+
 
         // Calcul du couple en utilisant le contrôle par couple calculé
         // inverse_dynamics_model_ est à utiliser
