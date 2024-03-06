@@ -1,0 +1,13 @@
+# manual control for slider_publisher
+joint_1_cmd_effort:
+    type: std_msgs/Float64
+    pose:
+        min: -10.
+        max: 10.
+        to: data
+joint_2_cmd_effort:
+    type: std_msgs/Float64
+    pose:
+        min: -10.
+        max: 10.
+        to: data

@@ -1,0 +1,265 @@
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter 
+     After generation, multiple changes and additions were required as described in the 2R Robot Modeling Technical Report.-->
+<robot
+  name="scara_sw">
+
+    <!-- 	___________Joints Control in Gazebo___________-->	
+
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so"/>
+  </gazebo>
+  <!-- Note that material tags supplied by SolidWorks are used in rviz but ignored by Gazebo -->
+  <gazebo reference="link_1">
+    <material>Gazebo/Turquoise</material>
+  </gazebo>
+  <gazebo reference="link_2">
+    <material>Gazebo/Orange</material>
+  </gazebo>
+
+  <!-- Used for fixing robot to Gazebo 'base_link' -->
+  <link name="world"/>
+  <joint name="world_joint" type="fixed">
+	<origin xyz="0 0 1.0" rpy="1.57079632679 -1.57079632679 1.57079632679"/>
+    <parent link="world"/>
+    <child link="base_link"/>
+  </joint>
+
+
+
+  <link
+    name="base_link">
+    <inertial>
+       <origin
+         xyz="0 0 0"
+        rpy="0 0 -1.57079632679" />
+      <mass
+        value="15.137" />
+      <inertia
+        ixx="1.1651"
+        ixy="0.00079443"
+        ixz="-5.3686E-06"
+        iyy="1.1282"
+        iyz="-0.004763"
+        izz="2.2914" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 -1.57079632679" />
+      <geometry>
+        <mesh
+          filename="package://scara_sw/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.66667 0.69804 0.76863 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 -1.57079632679" />
+      <geometry>
+        <mesh
+          filename="package://scara_sw/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="link_1">
+    <inertial>
+      <origin
+        xyz="0.066529 0.00 0.179392"
+        rpy="0 0 0" />
+
+       <mass
+        value="7.084761" />
+      <inertia
+        ixx="0.147885"
+        ixy="0.0000"
+        ixz="-0.033179"
+        iyy="0.196455"
+        iyz="0.0000"
+        izz="0.055095" /> 
+ <!--  Mass and inertia 10x
+      <mass
+        value="70.84761" />
+      <inertia
+        ixx="1.47885"
+        ixy="0.0000"
+        ixz="-0.33179"
+        iyy="1.96455"
+        iyz="0.0000"
+        izz="0.55095" /> -->
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://scara_sw/meshes/link_1.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.89804 0.91765 0.92941 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://scara_sw/meshes/link_1.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_1"
+    type="revolute">
+    <origin
+      xyz="0 0 0.049"
+      rpy="0 0 -1.57079632679" />
+    <parent
+      link="base_link" />
+    <child
+      link="link_1" />
+    <axis
+      xyz="0 0 1" />
+<!-- Velocity limit from motor max 691Rad/s  divided by Nr=15 -->
+<!-- Effort limit nominal 2Nm (Abs max=4Nm) from motor spec times Nr=15 
+    <limit
+      lower="-3.211405854"
+      upper="0.0698132"
+      effort="30"
+      velocity="46.1" /> 
+-->
+    <limit
+      lower="-100"
+      upper="100"
+      effort="30" 
+     velocity="100" /> 
+ <!--    Very large friction
+	<dynamics
+      damping="8.0"
+      friction="2.5" />
+-->
+    <dynamics
+      damping="1.5"
+      friction="0.25" />
+  </joint>
+   <!-- Required for ROS control -->
+   
+    <transmission name="joint_1_transmission">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="joint_1">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <mechanicalReduction>15</mechanicalReduction>
+      </joint>
+      <actuator name="joint_1_actuator"/>
+    </transmission>
+  
+  <link
+    name="link_2">
+    <inertial>
+      <origin
+        xyz="0.082451 0.0 0.045927"
+        rpy="0 0 0" />
+ <!--    Mass and inertia 10x
+	<mass
+        value="31.81291" /> -->
+
+<!--       <inertia
+        ixx="0.13725"
+        ixy="0.00"
+        ixz="0.06881"
+        iyy="0.67471"
+        iyz="0.00"
+        izz="0.57501" /> -->
+   
+     <mass
+        value="3.181291" />
+     <inertia
+        ixx="0.013725"
+        ixy="0.00"
+        ixz="0.006881"
+        iyy="0.067471"
+        iyz="0.00"
+        izz="0.057501" /> 
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://scara_sw/meshes/link_2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.89804 0.91765 0.92941 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://scara_sw/meshes/link_2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="joint_2"
+    type="revolute">
+  <!--  l1 longer by 20cm
+	 <origin
+      xyz="0.48002 0.0 0.071"
+      rpy="0 0 0" /> -->
+   <origin
+      xyz="0.28002 0.0 0.071"
+      rpy="0 0 0" /> 
+    <parent
+      link="link_1" />
+    <child
+      link="link_2" />
+    <axis
+      xyz="0 0 1" />
+<!-- Velocity limit from motor max 691Rad/s  divided by Nr=15 -->
+<!-- Effort limit nominal 2Nm (Abs max=4) from motor spec times Nr=15 
+    <limit
+      lower="-2.7925"
+      upper="2.7925"
+      effort="30" 
+     velocity="46.1" /> 
+-->
+    <limit
+      lower="-100"
+      upper="100"
+      effort="30" 
+     velocity="100" /> 
+    <dynamics
+      damping="1.1"
+      friction="0.35" />
+<!--   Very large friction
+    <dynamics
+      damping="5.0"
+      friction="1.5" />
+-->
+  </joint>
+    <transmission name="joint_2_transmission">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="joint_2">
+        <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+        <mechanicalReduction>15</mechanicalReduction>
+      </joint>
+      <actuator name="joint_2_actuator"/>
+    </transmission>
+</robot>
