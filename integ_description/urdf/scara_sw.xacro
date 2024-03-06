@@ -160,19 +160,19 @@
     <child link="scara/link_1" />
     <axis
       xyz="0 0 1" />
-<!-- Velocity limit from motor max 691Rad/s  divided by Nr=15 -->
-<!-- Effort limit nominal 2Nm (Abs max=4Nm) from motor spec times Nr=15 
+<!-- Velocity limit from motor max 691Rad/s  divided by Nr=15 (= 46.07) -->
+<!-- Effort limit nominal 2Nm (Abs max=4Nm) from motor spec times Nr=15 -->
     <limit
       lower="-3.211405854"
       upper="0.0698132"
       effort="30"
-      velocity="46.1" /> 
--->
-    <limit
-      lower="-3.1"
-      upper="0"
-      effort="30" 
-     velocity="100" /> 
+      velocity="46.07" /> 
+
+<!--<limit
+      lower="-3.211405854"
+      upper="0.0698132"
+      effort="100" 
+      velocity="10" /> -->
  <!--    Very large friction
 	<dynamics
       damping="8.0"
