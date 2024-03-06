@@ -63,7 +63,6 @@ private:
         double m1 = 7.1 ;
         double m2 = 3.18 ;
         double l1 = 0.28 ;
-        double l2 = 0.28 ;
         double mx1=l1*m1;
 
         double Ja=0.356567;
@@ -81,7 +80,7 @@ private:
         parameters(3)=MXa;
         parameters(4)=Fv1;
         parameters(5)=Fs2;
-        parameters(6)=Fv1;
+        parameters(6)=Fv2;
 
         //définition des erreurs
         double e1=(pd1-real_pos1)*kp;
