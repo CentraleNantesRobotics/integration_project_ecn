@@ -219,7 +219,7 @@
         iyy="0.67471"
         iyz="0.00"
         izz="0.57501" /> -->
-  <!--    Mass and inertia original  
+  <!--  Mass and inertia original   -->
      <mass
         value="3.181291" />
      <inertia
@@ -229,9 +229,9 @@
         iyy="0.067471"
         iyz="0.00"
         izz="0.057501" /> 
-    </inertial> -->
+    </inertial>
   <!--    Mass and inertia friction match   -->
-       <mass
+<!--  <mass
         value="7.084761" />
       <inertia
         ixx="0.147885"
@@ -240,7 +240,7 @@
         iyy="0.196455"
         iyz="0.0000"
         izz="0.055095" />
-    </inertial> 
+    </inertial>  -->
     <visual>
       <origin
         xyz="0 0 0"
