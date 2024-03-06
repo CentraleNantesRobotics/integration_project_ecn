@@ -1,4 +1,4 @@
 Computed Torque Control,Luca Le Giga BOGOSS,Baptiste LARDINOIT,Henri GUILLOUZOUIC,Julien COUPEAUX,Thibault LEBLANC,Yohan FLATRES,Ulysse Cat
-Vision,William CAZIN,Anouar CHIBANI,Noé PIGRET
-Trajectoire,Eugène MATHIEU,Renato RAMOS
-Contrôle PID,William CAZIN (implémentation des paramètres),Anouar CHIBANI (implémentation des paramètres),Noé PIGRET (implémentation des paramètres)
+Vision,William CAZIN,Anouar CHIBANI,Noé PIGRET,,,,,
+Trajectoire,Eugène MATHIEU,Renato RAMOS,,,,,
+Contrôle PID,William CAZIN (implémentation des paramètres),Anouar CHIBANI (implémentation des paramètres),Noé PIGRET (implémentation des paramètres),,,,,
