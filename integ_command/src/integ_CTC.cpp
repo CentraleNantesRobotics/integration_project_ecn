@@ -61,47 +61,30 @@ private:
         double g = 0;
         double m1 = 7.1 ;
         double m2 = 3.18 ;
-        double I1 = 0.0237 ;
-        double I2 = 0.0359 ;
-        double c1 = 0.066 ;
-        double c2 = 0.0825 ;
-        double n1 = 15 ;
-        double n2 = 15 ;
-        double Ia1 = 38e-6 ;
-        double Ia2 = 38e-6 ;
         double l1 = 0.28 ;
         double l2 = 0.28 ;
+        double mx1=l1*m1;
 
-        double zz1 = I1 + m1*c1*c1 ;
-        double zz2 = I2 + m2*c2*c2 ;
-        double mx1 = m1*c1 ;
-        double mx2 = m2*c2 ;
+        double Ja=0.356567;
+        double zz2=0.044085;
+        double mx2=0.246391;
+        double MXa=mx1+l1*m2;
+        double Fv1=0.369366;
+        double Fs2=0.409582;
+        double Fv2=0.200203;
 
-        //définition de la matrice de gravité
-        Eigen::Vector2d gravity;
-        double g11 =-1*(m1+m2)*g*l1*sin(real_pos1)-m2*g*l2*sin(real_pos1+real_pos2);
-        double g22 =-1*m2*g*l2*sin(real_pos1+real_pos2);
-        gravity(0,0)=g11;
-        gravity(1,0)=g22;
+        Eigen::Vector2d parameters;
+        parameters(0)=Ja;
+        parameters(1)=zz2;
+        parameters(2)=mx2;
+        parameters(3)=MXa;
+        parameters(4)=Fv1;
+        parameters(5)=Fs2;
+        parameters(6)=Fv1;
 
         //définition de la matrice d'intertie
-        Eigen::Matrix2d inertia;
-        double i11 = (m1+m2)*l1*l1+m2*l2*l2+2*m2*l1*l2*cos(real_pos2);
-        double i12 = m2*l2*l2+m2*l1*l2*cos(real_pos2);
-        double i21 = i12;
-        double i22 = m2*l2*l2;
-        inertia(0,0)=i11;
-        inertia(0,1)=i12;
-        inertia(1,0)=i21;
-        inertia(1,1)=i22;
-
-        //définition de la matrice de coriolis
-        Eigen::Vector2d coriolis;
-        double c11 =-1*m2*l1*l2*(2*real_vel1*real_vel2+real_vel1*real_vel1)*sin(real_pos2);
-        double c22 =-1*m2*l1*l2*real_vel1*real_vel2*sin(real_pos2);
-        coriolis(0,0)=c11;
-        coriolis(1,0)=c22;
-
+        Eigen::MatrixXd model;
+        model(0,0)=i11;
 
         // Calcul du couple en utilisant le contrôle par couple calculé
         // inverse_dynamics_model_ est à utiliser
