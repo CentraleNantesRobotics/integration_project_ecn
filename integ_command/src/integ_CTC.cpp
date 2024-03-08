@@ -1,5 +1,5 @@
 ﻿//integ_CTC is a Computed Torque Control node designed for INTEG project for Centrale Nantes Robotics
-//Thibault LEBLANC & Julien COUPEAUX, Version 1.0.3, March 2024
+//Thibault LEBLANC & Julien COUPEAUX & Luca MIMOUNI & Baptiste LARDINOIT, Version 1.0.3, March 2024
 
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/node.hpp>
@@ -123,11 +123,11 @@ private:
         std_msgs::msg::Float64MultiArray computed_torque_msg_joint1;
         std_msgs::msg::Float64MultiArray computed_torque_msg_joint2;
 
-        Eigen::Vector2d computed_troque;
-        computed_troque=model*parameters;
+        Eigen::Vector2d computed_torque;
+        computed_torque=model*parameters;
 
-        computed_torque_msg_joint1.data[0] = computed_troque(0,0);
-        computed_torque_msg_joint2.data[0] = computed_troque(1,0);
+        computed_torque_msg_joint1.data[0] = computed_torque(0,0);
+        computed_torque_msg_joint2.data[0] = computed_torque(1,0);
 
         computed_torque_publisher_joint1_->publish(computed_torque_msg_joint1);
         computed_torque_publisher_joint2_->publish(computed_torque_msg_joint2);
