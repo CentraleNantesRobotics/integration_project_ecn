@@ -22,7 +22,6 @@ setup(
         'console_scripts': [
             'FeatureDetector = visual_servoing.FeatureDetector:main',
             'tracker = visual_servoing.tracker:main',
-            'tracker2 = visual_servoing.tracker2:main',
         ],
     },
 )
