@@ -6,15 +6,12 @@ sl.declare_arg('sliders', False)    # for manual control
 
 def launch_setup():
 
-    mode = sl.arg('mode')
-
-
-    sl.node('integ_command','integ_CTC.cpp')
+    sl.node('integ_command','integ_command')
                         
 
-        # sliders
-        if sl.arg('sliders'):
-            sl.node('slider_publisher', arguments = [sl.find('integ_command', f'CTC_manual.yaml')])
+     # sliders
+    if sl.arg('sliders'):
+    	sl.node('slider_publisher', arguments = [sl.find('integ_command', f'CTC_manual.yaml')])
         
 
     return sl.launch_description()

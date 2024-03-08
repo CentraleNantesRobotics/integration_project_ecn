@@ -34,14 +34,14 @@ public:
                     });
 
         kp_ = create_subscription<std_msgs::msg::Float64>(
-                    "/scara/kp",
+                    "/kp",
                     10,
                     [this](const std_msgs::msg::Float64::SharedPtr msg) {
              jointStateCallback(nullptr, nullptr, msg, nullptr);
         });
 
         kd_ = create_subscription<std_msgs::msg::Float64>(
-                    "/scara/kd",
+                    "/kd",
                     10,
                     [this](const std_msgs::msg::Float64::SharedPtr msg) {
              jointStateCallback(nullptr, nullptr, nullptr, msg);
@@ -123,11 +123,11 @@ private:
         std_msgs::msg::Float64MultiArray computed_torque_msg_joint1;
         std_msgs::msg::Float64MultiArray computed_torque_msg_joint2;
 
-        Eigen::Vector2d computed_troque;
-        computed_troque=model*parameters;
+        Eigen::Vector2d computed_torque;
+        computed_torque=model*parameters;
 
-        computed_torque_msg_joint1.data[0] = computed_troque(0,0);
-        computed_torque_msg_joint2.data[0] = computed_troque(1,0);
+        computed_torque_msg_joint1.data[0] = computed_torque(0,0);
+        computed_torque_msg_joint2.data[0] = computed_torque(1,0);
 
         computed_torque_publisher_joint1_->publish(computed_torque_msg_joint1);
         computed_torque_publisher_joint2_->publish(computed_torque_msg_joint2);

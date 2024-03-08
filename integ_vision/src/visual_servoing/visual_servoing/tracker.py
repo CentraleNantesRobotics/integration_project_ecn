@@ -21,11 +21,8 @@ class Tracker(Node):
         # publisher of the joint2 position command
         self.joint2_publisher_ = self.create_publisher(Float64, '/scara/joint_2_cmd_pos', 10)
 
-        self.latest_joint1_command = Float64()
-        self.latest_joint2_command = Float64()
-
     def joint_states_callback(self, msg):
-        self.q1 = msg.position[1]
+        self.q1 = msg.position[1] # opposite sign to the joint state because the joint state is published in the opposite direction
         self.q2 = msg.position[2]
 
     def listener_callback(self, msg):
@@ -35,10 +32,8 @@ class Tracker(Node):
 
         if msg.detected == True :
 
-            error_x = abs(320 - msg.center.x) # 320 is the center of the image
-            error_y = abs(200 - msg.center.y) # 200 is the center of the image
-
-            error_vector_pixel = [error_x, error_y] # the error vector in pixels
+            error_x = msg.center.x-320 # 320 is the center of the image
+            error_y = msg.center.y-200 # 200 is the center of the image
 
             vertical_fov = 2.094 # the vertical field of view of the camera in radians
             horizontal_fov = 2.094 # the horizontal field of view of the camera in radians
@@ -65,27 +60,22 @@ class Tracker(Node):
 
                 theta1 = math.atan2(s1, c1)
                 theta2 = math.atan2(s2, c2)
-                
-                joint1_command.data = theta1
-                joint2_command.data = theta2
-
-                self.latest_joint1_command = joint1_command
-                self.latest_joint2_command = joint2_command
 
             #convert the joint differences angles between q1 and theta 1 to degrees and print them DEBUGGING
                 joint1_diff = (theta1 - self.q1) * 180 / math.pi
                 joint2_diff = (theta2 - self.q2) * 180 / math.pi
                 self.get_logger().info(f'joint1 diff: {joint1_diff}, joint2 diff: {joint2_diff}')
 
+                joint1_command.data = joint1_diff
+                joint2_command.data = joint2_diff
+
                 self.joint1_publisher_.publish(joint1_command)
-                self.joint2_publisher_.publish(joint2_command)
+                #self.joint2_publisher_.publish(joint2_command)
             except Exception as e:
                 self.get_logger().error(f'Error in inverse kinematics: {e}')
                 return
 
         else:
-            self.joint1_publisher_.publish(self.latest_joint1_command)
-            self.joint2_publisher_.publish(self.latest_joint2_command)
             self.get_logger().info('No feature detected')
 
 

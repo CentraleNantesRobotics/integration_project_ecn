@@ -4,12 +4,17 @@
      For more information, please see http://wiki.ros.org/sw_urdf_exporter 
      After generation, multiple changes and additions were required as described in the 2R Robot Modeling Technical Report.-->
 <robot  name="scara_sw" xmlns:xacro="http://www.ros.org/wiki/xacro" >
+
     <xacro:arg name="offset" default="1."/>
     <xacro:arg name="mode" default="position"/>
-    <xacro:include filename="camera.xacro" />  <!--Include the camera.xacro file ADDED BY ME-->
+
+    <xacro:include filename="camera.xacro" />  <!--Include the camera.xacro file -->
+
     <xacro:property name="mode" value="$(arg mode)"/>
+
     <!-- 	___________Joints Control in Gazebo___________-->	
    <xacro:macro name="joint_controller" params="joint p i d cmd_max">
+
     <xacro:if value="${mode == 'position'}">
       <plugin filename="libignition-gazebo-joint-position-controller-system.so" name="ignition::gazebo::systems::JointPositionController">
               <joint_name>${joint}</joint_name>
@@ -22,6 +27,7 @@
               <cmd_min>${-cmd_max}</cmd_min>
           </plugin>
     </xacro:if>
+
     <xacro:if value="${mode == 'velocity'}">
             <plugin filename="libignition-gazebo-joint-controller-system.so" name="ignition::gazebo::systems::JointController">
               <joint_name>${joint}</joint_name>
@@ -34,17 +40,26 @@
         </plugin>
     </xacro:if>
    </xacro:macro>
+
+
    <gazebo>
-    <xacro:joint_controller joint="joint_1" cmd_max="30" p="700" i="0.01" d="10"/>
-    <xacro:joint_controller joint="joint_2" cmd_max="30" p="700" i="0.01" d="10"/>
+    <xacro:joint_controller joint="joint_1" cmd_max="30" p="10" i="0" d="0"/> <!-- 700 0.01 10 -->
+    <xacro:joint_controller joint="joint_2" cmd_max="30" p="10" i="0" d="0"/> <!-- 700 0.01 10 -->
    </gazebo>
+
+
+
   <!-- Used for fixing robot to Gazebo base_link -->
   <link name="world"/>
+
   <joint name="world_joint" type="fixed">
 	<origin xyz="0. 0 $(arg offset)" rpy="0 0. 0"/>
     <parent link="world"/>
     <child link="scara/base_link"/>
   </joint>
+
+
+
   <link name="scara/base_link">
     <inertial>
        <origin
@@ -89,6 +104,7 @@
       <origin
         xyz="0.066529 0.00 0.179392"
         rpy="0 0 0" />
+
        <mass
         value="7.084761" />
       <inertia
@@ -175,12 +191,16 @@
       </joint>
       <actuator name="joint_1_actuator"/>
     </transmission>
+
   <link name="scara/ee_frame"/>
+
   <joint name="ee_joint" type="fixed">
-  <origin xyz="0.28002 0.0 0.03" />
+  <origin xyz="0.28002 0.0 0.071" />
     <parent link="scara/link_2" />
     <child link="scara/ee_frame" />
   </joint>
+
+
   <link name="scara/link_2">
     <inertial>
       <origin
@@ -189,6 +209,7 @@
  <!--    Mass and inertia 10x
 	<mass
         value="31.81291" /> -->
+
 <!--       <inertia
         ixx="0.13725"
         ixy="0.00"
@@ -280,4 +301,7 @@
     <gazebo>
         <plugin filename="libignition-gazebo-joint-state-publisher-system.so" name="ignition::gazebo::systems::JointStatePublisher"/>
 </gazebo>
+
+
+
 </robot>
