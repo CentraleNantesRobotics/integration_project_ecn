@@ -1,5 +1,5 @@
 ﻿//integ_CTC is a Computed Torque Control node designed for INTEG project for Centrale Nantes Robotics
-//Thibault LEBLANC & Julien COUPEAUX, Version 1.0.3, March 2024
+//Thibault LEBLANC & Julien COUPEAUX & Luca MIMOUNI & Baptiste LARDINOIT, Version 1.0.3, March 2024
 
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/node.hpp>
