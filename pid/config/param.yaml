@@ -1,0 +1,6 @@
+PID:
+    P = 1
+    I = 1
+    D = 1
+    q1_windup = 100
+    q2_windup = 100
