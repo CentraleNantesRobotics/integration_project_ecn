@@ -8,6 +8,8 @@
 #include "std_msgs/msg/float64.hpp"
 #include "yaml-cpp/yaml.h"
 #include <Eigen/Core>
+#include "test.cpp"
+
 using namespace std::placeholders;
 
 class ComputedTorqueControl : public rclcpp::Node {
@@ -23,7 +25,7 @@ public:
                     "/scara/desired_joint_states",
                     10,
                     [this](const sensor_msgs::msg::JointState::SharedPtr msg) {
-                        jointStateCallback(msg, nullptr, nullptr, nullptr);
+                        jointStateCallback(nullptr, msg, nullptr, nullptr);
                     }); // A revoir en fonction du nom des topics des gens qui font la trajectoire
 
         joint_state_subscriber_ = create_subscription<sensor_msgs::msg::JointState>(
@@ -55,6 +57,7 @@ public:
 }
 
 private:
+
 
      void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr joint_state, const sensor_msgs::msg::JointState::SharedPtr desired_joint_state, const std_msgs::msg::Float64::SharedPtr kp, const std_msgs::msg::Float64::SharedPtr kd) {
 
@@ -147,7 +150,14 @@ private:
 
 int main(int argc, char *argv[]) {
         rclcpp::init(argc, argv);
-        rclcpp::spin(std::make_shared<ComputedTorqueControl>());
+        auto ctc{std::make_shared<ComputedTorqueControl>()};
+        auto test{std::make_shared<crash_test>()};
+
+        rclcpp::executors::SingleThreadedExecutor exec;
+        exec.add_node(ctc);
+        exec.add_node(test);
+        exec.spin();
+
         rclcpp::shutdown();
         return 0;
 }

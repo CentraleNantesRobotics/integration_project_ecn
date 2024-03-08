@@ -25,7 +25,7 @@ include_directories(include/ ${EIGEN3_INCLUDE_DIRS})
 
 
 
-ament_auto_add_executable(integ_command src/integ_CTC.cpp)
+ament_auto_add_executable(integ_command src/integ_CTC.cpp src/test.cpp)
 
 
 
