@@ -25,28 +25,28 @@ public:
                     "/scara/desired_joint_states",
                     10,
                     [this](const sensor_msgs::msg::JointState::SharedPtr msg) {
-                        jointStateCallback(nullptr, msg, nullptr, nullptr);
+                        desiredJointStateCallback(msg);
                     }); // A revoir en fonction du nom des topics des gens qui font la trajectoire
 
         joint_state_subscriber_ = create_subscription<sensor_msgs::msg::JointState>(
                     "/scara/joint_states",
                     10,
                     [this](const sensor_msgs::msg::JointState::SharedPtr msg) {
-                        jointStateCallback(msg, nullptr, nullptr, nullptr);
+                        jointStateCallback(msg);
                     });
 
         kp_ = create_subscription<std_msgs::msg::Float64>(
                     "/kp",
                     10,
                     [this](const std_msgs::msg::Float64::SharedPtr msg) {
-             jointStateCallback(nullptr, nullptr, msg, nullptr);
+                    kpCallback(msg);
         });
 
         kd_ = create_subscription<std_msgs::msg::Float64>(
                     "/kd",
                     10,
                     [this](const std_msgs::msg::Float64::SharedPtr msg) {
-             jointStateCallback(nullptr, nullptr, nullptr, msg);
+                    kdCallback(msg);
                     });
 
         computed_torque_publisher_joint1_ = this->create_publisher<std_msgs::msg::Float64MultiArray>(
@@ -57,22 +57,43 @@ public:
 }
 
 private:
+    double kp;
+    double kd;
+    double real_pos1 ;
+    double real_pos2 ;
+    double real_vel1 ;
+    double real_vel2 ;
+    double pd1;
+    double pd2;
+    double vd1;
+    double vd2;
+    double ad1;
+    double ad2;
 
-
-     void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr joint_state, const sensor_msgs::msg::JointState::SharedPtr desired_joint_state, const std_msgs::msg::Float64::SharedPtr kp, const std_msgs::msg::Float64::SharedPtr kd) {
+    void kpCallback(std_msgs::msg::Float64::SharedPtr k){
+        kp=k->data;
+    }
+    void kdCallback(std_msgs::msg::Float64::SharedPtr k){
+        kd=k->data;
+    }
+    void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr joint_state){
+        //définition de l'état
+        real_pos1 = joint_state->position[1];
+        real_pos2 = joint_state->position[2];
+        real_vel1 = joint_state->velocity[1];
+        real_vel2 = joint_state->velocity[2];
+    }
+    void desiredJointStateCallback(const sensor_msgs::msg::JointState::SharedPtr desired_joint_state) {
 
         //définition des angles et vitesses désirées
-        double pd1 = desired_joint_state->position[1];
-        double pd2 = desired_joint_state->position[2];
-        double vd1 = desired_joint_state->velocity[1];
-        double vd2 = desired_joint_state->velocity[2];
-        double ad1 = desired_joint_state->effort[1];
-        double ad2 = desired_joint_state->effort[2];
-        //définition de l'état
-        double real_pos1 = joint_state->position[1];
-        double real_pos2 = joint_state->position[2];
-        double real_vel1 = joint_state->velocity[1];
-        double real_vel2 = joint_state->velocity[2];
+        pd1 = desired_joint_state->position[1];
+        pd2 = desired_joint_state->position[2];
+        vd1 = desired_joint_state->velocity[1];
+        vd2 = desired_joint_state->velocity[2];
+        ad1 = desired_joint_state->effort[1];
+        ad2 = desired_joint_state->effort[2];
+    }
+    void ComputeTorque(){
         //définition des variables
         double g = 0;
         double m1 = 7.1 ;
@@ -98,10 +119,10 @@ private:
         parameters(6)=Fv2;
 
         //définition des erreurs
-        double e1=(pd1-real_pos1)*kp->data;
-        double e2=(pd2-real_pos2)*kp->data;
-        double ev1=(vd1-real_vel1)*kd->data;
-        double ev2=(vd2-real_vel2)*kd->data;
+        double e1=(pd1-real_pos1)*kp;
+        double e2=(pd2-real_pos2)*kp;
+        double ev1=(vd1-real_vel1)*kd;
+        double ev2=(vd2-real_vel2)*kd;
 
         //définition de la matrice d'intertie
         Eigen::MatrixXd model;
