@@ -28,8 +28,7 @@ include_directories(include/ ${EIGEN3_INCLUDE_DIRS})
 ament_auto_add_executable(integ_command src/integ_CTC.cpp)
 target_include_directories(integ_command  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include )
 
-install(DIRECTORY scripts
-        DESTINATION lib/${PROJECT_NAME})
+
 
 install(DIRECTORY launch
         DESTINATION share/${PROJECT_NAME})

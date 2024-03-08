@@ -8,8 +8,7 @@ def launch_setup():
 
     mode = sl.arg('mode')
 
-    sl.include('integ_description', 'state_publisher_launch.py',
-               launch_arguments = {'use_sim_time': True, 'mode': mode})
+
     sl.node('integ_command','integ_CTC.cpp')
                         
 
