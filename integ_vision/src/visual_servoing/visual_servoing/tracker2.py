@@ -75,7 +75,7 @@ class Tracker(Node):
                 W = np.block([[RcamOpt_EEframe, txR],[np.zeros((3, 3)), RcamOpt_EEframe]])
 
                 # Rotation matrix from the end effector frame to the base frame
-                q12 = self.q1 + self.q2 + math.pi/2
+                q12 = self.q1 + self.q2 - math.pi/2
                 R0_ee = np.array([[np.cos(q12), -np.sin(q12), 0], [np.sin(q12), np.cos(q12), 0], [0, 0, 1]])
                 print(f'R0_ee: {R0_ee}')
 
@@ -99,7 +99,7 @@ class Tracker(Node):
 
                 # Calculate P and q for the QP problem
                 P = matrix(np.dot(Js.T, Js))  # P = Js^TJs
-                q = matrix(-lambda_ * np.dot(Js.T, s))  # q = -Js^T * lambda * s
+                q = matrix(lambda_ * np.dot(Js.T, s))  # q = lambda * Js^T * s
 
                 care_param = 0.9
                 #first task : joint limits
