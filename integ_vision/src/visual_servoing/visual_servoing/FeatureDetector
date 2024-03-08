@@ -22,7 +22,7 @@ class FeatureDetector(Node):
         try:
             cv_image = self.cv_bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
         except Exception as e:
-            self.get_logger().error(f'Error converting image from ros2 to openCV format: {e}')
+            print("error converting the image message to OpenCV format: ", e)
             return
 
         #convert from RGB to HSV        
@@ -54,7 +54,7 @@ class FeatureDetector(Node):
             center_x = int(M["m10"] / M["m00"])
             center_y = int(M["m01"] / M["m00"])
 
-            self.get_logger().info(f'Center: ({center_x}, {center_y}), Blue pixels: {blue_pixel_count}')
+            print(f'center: {center_x}, {center_y}', f'area: {blue_pixel_count}')
             center_and_area.center.x = float(center_x)
             center_and_area.center.y = float(center_y)
             center_and_area.area = blue_pixel_count
@@ -62,7 +62,7 @@ class FeatureDetector(Node):
             self.publisher_.publish(center_and_area)
         except Exception as e:
             center_and_area.detected = False
-            self.get_logger().error(f'Error processing the mask, likely a division by 0 calculating the center: {e}')
+            print("error processing the image: ", e)
             self.publisher_.publish(center_and_area)
 
 def main(args=None):

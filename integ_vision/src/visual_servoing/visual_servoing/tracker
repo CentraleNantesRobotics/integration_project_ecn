@@ -79,7 +79,7 @@ class Tracker(Node):
                 W = np.block([[RcamOpt_EEframe, txR],[np.zeros((3, 3)), RcamOpt_EEframe]])
 
                 # Rotation matrix from the end effector frame to the base frame
-                q12 = self.q1 + self.q2 - math.pi/2
+                q12 = self.q1 + self.q2 + math.pi/2
                 R0_ee = np.array([[np.cos(q12), -np.sin(q12), 0], [np.sin(q12), np.cos(q12), 0], [0, 0, 1]])
                 print(f'R0_ee: {R0_ee}')
 
@@ -102,7 +102,7 @@ class Tracker(Node):
 
                 # Calculate P and q for the QP problem
                 P = matrix(np.dot(Js.T, Js))  # P = Js^TJs
-                q = matrix(self.lambda_ * np.dot(Js.T, s))  # q = -Js^T * lambda * s
+                q = matrix(-self.lambda_ * np.dot(Js.T, s))  # q = -Js^T * lambda * s
 
                 care_param = 0.9
                 #first task : joint limits
@@ -143,8 +143,8 @@ class Tracker(Node):
                 joint2_command.data = q_dot[1]
 
                 #print the commands in degrees
-                self.get_logger().info(f'Joint1 Command: {math.degrees(joint1_command.data)}')
-                self.get_logger().info(f'Joint2 Command: {math.degrees(joint2_command.data)}')
+                print(f'joint1_command: {joint1_command.data*180/math.pi}')
+                print(f'joint2_command: {joint2_command.data*180/math.pi}')
                 self.joint1_publisher_.publish(joint1_command)
                 self.joint2_publisher_.publish(joint2_command)
 
@@ -152,13 +152,13 @@ class Tracker(Node):
                 self.latest_joint2_command = joint2_command
 
             except Exception as e:
-                self.get_logger().error(f'calculating command: {e}')
+                print(e)
                 return
 
         else: #if no feature is detected publish the latest joint commands again
             self.joint1_publisher_.publish(self.latest_joint1_command)
             self.joint2_publisher_.publish(self.latest_joint2_command)
-            self.get_logger().info('No feature detected')
+            print("No feature detected")
 
 
 def main(args=None):

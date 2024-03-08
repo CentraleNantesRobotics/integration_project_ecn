@@ -17,13 +17,15 @@ def generate_launch_description():
     sl.include('integ_description', 'target_launch.py',
                launch_arguments={'use_sim_time': True, 'vel': sl.arg('vel')})
 
-    with sl.group(if_arg = 'use_vs') :
-        with sl.group(if_arg = 'debug'):
+    with sl.group(if_arg='use_vs'):
+        # Group nodes based on the debug flag
+        with sl.group(if_arg='debug'):
+            # Debug is true, show output
             sl.node(package='visual_servoing', executable='FeatureDetector', output='screen')
             sl.node(package='visual_servoing', executable='tracker', output='screen', parameters=[{'lambda': sl.arg('lambda')}])
-        with sl.group(unless_arg = 'debug'):
-            with sl.group(unless_arg='debug'):
-                sl.node(package='visual_servoing', executable='FeatureDetector', output='screen')
-                sl.node(package='visual_servoing', executable='tracker', output='screen', parameters=[{'lambda': sl.arg('lambda')}])
+        with sl.group(unless_arg='debug'):
+            # Debug is false, hide output
+            sl.node(package='visual_servoing', executable='FeatureDetector')
+            sl.node(package='visual_servoing', executable='tracker', parameters=[{'lambda': sl.arg('lambda')}])
         
     return sl.launch_description()
