@@ -1,0 +1,13 @@
+# manual gains set control for slider_publisher
+kp:
+    type: std_msgs/Float64
+    pose:
+        min: -10.
+        max: 10.
+        to: data
+kd:
+    type: std_msgs/Float64
+    pose:
+        min: -10.
+        max: 10.
+        to: data
