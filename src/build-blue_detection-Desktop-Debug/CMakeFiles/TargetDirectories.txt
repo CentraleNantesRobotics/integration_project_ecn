@@ -1,9 +1,0 @@
-/home/renato/Documents/ECN/integration_project_ecn/src/build-blue_detection-Desktop-Debug/CMakeFiles/uninstall.dir
-/home/renato/Documents/ECN/integration_project_ecn/src/build-blue_detection-Desktop-Debug/CMakeFiles/blue_detection_uninstall.dir
-/home/renato/Documents/ECN/integration_project_ecn/src/build-blue_detection-Desktop-Debug/CMakeFiles/test.dir
-/home/renato/Documents/ECN/integration_project_ecn/src/build-blue_detection-Desktop-Debug/CMakeFiles/edit_cache.dir
-/home/renato/Documents/ECN/integration_project_ecn/src/build-blue_detection-Desktop-Debug/CMakeFiles/rebuild_cache.dir
-/home/renato/Documents/ECN/integration_project_ecn/src/build-blue_detection-Desktop-Debug/CMakeFiles/list_install_components.dir
-/home/renato/Documents/ECN/integration_project_ecn/src/build-blue_detection-Desktop-Debug/CMakeFiles/install.dir
-/home/renato/Documents/ECN/integration_project_ecn/src/build-blue_detection-Desktop-Debug/CMakeFiles/install/local.dir
-/home/renato/Documents/ECN/integration_project_ecn/src/build-blue_detection-Desktop-Debug/CMakeFiles/install/strip.dir
