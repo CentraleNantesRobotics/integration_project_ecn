@@ -8,8 +8,7 @@ def generate_launch_description():
 
     with sl.group(ns = 'target'):
 
-        sl.robot_state_publisher('integ_description', 'target.xacro',
-                             xacro_args=sl.arg_map('vel'))
+        sl.robot_state_publisher('integ_description', 'target.xacro', xacro_args=sl.arg_map('vel'))
 
         sl.spawn_gz_model('target')
 
