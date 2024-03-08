@@ -48,10 +48,10 @@ public:
                     });
 
         computed_torque_publisher_joint1_ = this->create_publisher<std_msgs::msg::Float64MultiArray>(
-            "/scara/computed_torque_joint1", 10);
+            "/scara/joint_1_cmd_effort", 10);
 
         computed_torque_publisher_joint2_ = this->create_publisher<std_msgs::msg::Float64MultiArray>(
-            "/scara/computed_torque_joint2", 10);
+            "/scara/joint_2_cmd_effort", 10);
 }
 
 private:

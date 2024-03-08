@@ -1,0 +1,79 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-888ba5b143d734f533b8.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.8"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0
+					],
+					"name" : "integ_command",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "integ_command::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-integ_command-Debug-a626522d4f0683ed70f7.json",
+					"name" : "integ_command",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "integ_command_uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-integ_command_uninstall-Debug-e5ae4b15c458f3153d4d.json",
+					"name" : "integ_command_uninstall",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-uninstall-Debug-8e03b6eded106d9e3166.json",
+					"name" : "uninstall",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/thibault/Documents/ECN_Robotics/INTEG/integration_project_ecn/build-integ_command-Imported_Kit-Debug",
+		"source" : "/home/thibault/Documents/ECN_Robotics/INTEG/integration_project_ecn/integ_command"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}
