@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from integ_my_robot_interfaces.msg import CenterAndArea
+from integ_msgs.msg import CenterAndArea
 from std_msgs.msg import Float64
 import numpy as np
 import math
