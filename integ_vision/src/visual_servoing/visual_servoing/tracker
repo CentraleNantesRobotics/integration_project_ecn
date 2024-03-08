@@ -7,7 +7,6 @@ import numpy as np
 import math
 from sensor_msgs.msg import JointState
 from cvxopt import matrix, solvers
-from simple_launch import SimpleLauncher as sl
 
 class Tracker(Node):
     def __init__(self):
@@ -27,7 +26,8 @@ class Tracker(Node):
         self.latest_joint1_command = Float64()
         self.latest_joint2_command = Float64()
 
-        sl.declare_arg('lambda', 1.)  # visual servoing proportional gain
+        self.declare_parameter('lambda', 1.0)
+        self.lambda_ = self.get_parameter('lambda').value
 
     def joint_states_callback(self, msg):
         self.q1 = msg.position[1]
@@ -99,11 +99,10 @@ class Tracker(Node):
                 
                 # Optimal q_dot
                 s = np.array([x, y])
-                lambda_ = sl.arg('lambda')
 
                 # Calculate P and q for the QP problem
                 P = matrix(np.dot(Js.T, Js))  # P = Js^TJs
-                q = matrix(-lambda_ * np.dot(Js.T, s))  # q = -Js^T * lambda * s
+                q = matrix(-self.lambda_ * np.dot(Js.T, s))  # q = -Js^T * lambda * s
 
                 care_param = 0.9
                 #first task : joint limits
