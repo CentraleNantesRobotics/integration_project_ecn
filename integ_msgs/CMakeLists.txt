@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(integ_my_robot_interfaces)
+project(integ_msgs)
 
 # Default to C++17
 if(NOT CMAKE_CXX_STANDARD)

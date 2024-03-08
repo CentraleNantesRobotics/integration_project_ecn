@@ -34,14 +34,14 @@ public:
                     });
 
         kp_ = create_subscription<std_msgs::msg::Float64>(
-                    "/scara/kp",
+                    "/kp",
                     10,
                     [this](const std_msgs::msg::Float64::SharedPtr msg) {
              jointStateCallback(nullptr, nullptr, msg, nullptr);
         });
 
         kd_ = create_subscription<std_msgs::msg::Float64>(
-                    "/scara/kd",
+                    "/kd",
                     10,
                     [this](const std_msgs::msg::Float64::SharedPtr msg) {
              jointStateCallback(nullptr, nullptr, nullptr, msg);

@@ -4,7 +4,7 @@ from sensor_msgs.msg import Image
 import cv2
 import numpy as np
 from cv_bridge import CvBridge
-from integ_my_robot_interfaces.msg import CenterAndArea
+from integ_msgs.msg import CenterAndArea
 
 class FeatureDetector(Node):
     def __init__(self):

@@ -11,7 +11,7 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
     ],
-    install_requires=['setuptools','integ_my_robot_interfaces'],
+    install_requires=['setuptools','integ_msgs'],
     zip_safe=True,
     maintainer='t-lemmel',
     maintainer_email='lemmeltom@gmail.com',

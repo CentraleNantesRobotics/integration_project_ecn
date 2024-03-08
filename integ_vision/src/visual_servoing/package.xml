@@ -8,7 +8,7 @@
 
   <!-- Other dependencies -->
   <depend>rclpy</depend>
-  <depend>my_robot_interfaces</depend>
+  <depend>integ_msgs</depend>
   <depend>std_msgs</depend>
 
   <!-- These test dependencies are optional

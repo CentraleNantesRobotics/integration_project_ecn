@@ -1,0 +1,5 @@
+Fichiers fournis:
+
+1. identif_students.m: fichier matlab pour l'identification, avec les dernières étapes à compléter.
+2. ident_data.mat: fichier de données pour réaliser l'identification.
+3. cros_validation.mat: fichier de données pour la validation avec des données autres que celles utilisées pour l'identification. On s'en sert pour comparer le couple mesuré avec le couple calculé à partir du modèle identifié.
