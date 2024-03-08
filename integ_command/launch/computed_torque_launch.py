@@ -6,7 +6,7 @@ sl.declare_arg('sliders', False)    # for manual control
 
 def launch_setup():
 
-    sl.node('integ_command','integ_CTC')
+    sl.node('integ_command','integ_command')
                         
 
      # sliders
