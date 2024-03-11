@@ -1,3 +1,7 @@
+//integ_CTC_test is a trajectory test for Computed Torque Control node designed for INTEG project for Centrale Nantes Robotics
+//Thibault LEBLANC & Julien COUPEAUX & Luca MIMOUNI & Baptiste LARDINOIT, Version 1.0.2, March 2024
+
+
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/node.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
@@ -54,5 +58,6 @@ private :
 
 
 };
+
 
 

@@ -126,7 +126,7 @@ private:
         double Fv2=0.200203;
 
         //Définition du vecteur des paramètres identifiés, les paramètres vu comme sans influence dans une étude préalable sont omis.
-        Eigen::Vector2d parameters;
+        Eigen::Vector<double,7> parameters;
         parameters(0)=Ja;
         parameters(1)=zz2;
         parameters(2)=mx2;
@@ -142,7 +142,7 @@ private:
         double ev2=(vd2-real_vel2)*kd;
 
         //définition de la matrice du modèle dynamique
-        Eigen::MatrixXd model;
+        Eigen::Matrix<double,2,7> model;
         model(0,0)=ad1;
         model(1,0)=0;
         model(0,1)=model(1,1)=ad1+ad2;
@@ -167,8 +167,8 @@ private:
         Eigen::Vector2d computed_torque;
         computed_torque=model*parameters;
 
-        computed_torque_msg_joint1.data[0] = computed_torque(0,0);
-        computed_torque_msg_joint2.data[0] = computed_torque(1,0);
+        computed_torque_msg_joint1.data[0] = computed_torque(0);
+        computed_torque_msg_joint2.data[0] = computed_torque(1);
 
 
         // Publication des couples
@@ -189,6 +189,7 @@ private:
 
     std::vector<std::vector<double>> inverse_dynamics_model_;
 };
+
 
 int main(int argc, char *argv[]) {
         rclcpp::init(argc, argv);
