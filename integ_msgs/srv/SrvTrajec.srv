@@ -1,0 +1,5 @@
+sensor_msgs/JointState initial_pose
+	
+sensor_msgs/JointState goal_pose
+---
+trajectory_msgs/JointTrajectory trajectory
