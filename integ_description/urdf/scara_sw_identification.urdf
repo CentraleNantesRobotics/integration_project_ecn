@@ -150,8 +150,8 @@
       friction="2.5" />
 -->
     <dynamics
-      damping="1.5"
-      friction="0.25" />
+      damping="0.369366"
+      friction="0.0" />
   </joint>
    <!-- Required for ROS control -->
    
@@ -246,8 +246,8 @@
       effort="30" 
      velocity="100" /> 
     <dynamics
-      damping="1.1"
-      friction="0.35" />
+      damping="0.200203"
+      friction="0.409582" />
 <!--   Very large friction
     <dynamics
       damping="5.0"
