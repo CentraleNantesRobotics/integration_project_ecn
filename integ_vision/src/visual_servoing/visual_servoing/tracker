@@ -26,13 +26,13 @@ class Tracker(Node):
         self.latest_joint1_command = Float64()
         self.latest_joint2_command = Float64()
 
-        self.declare_parameter('lambda', 1.0)
-        self.lambda_ = self.get_parameter('lambda').value
-
         self.first_lap = True
         self.time = 0
         self.x_memmory = 0
         self.y_memmory = 0
+
+        self.declare_parameter('lambda', 1.0)
+        self.lambda_ = self.get_parameter('lambda').value
 
     def joint_states_callback(self, msg):
         self.q1 = msg.position[1]
@@ -43,13 +43,15 @@ class Tracker(Node):
         joint1_command = Float64()
         joint2_command = Float64()
 
-        timestamp = msg.header.stamp
+        #get time 
+        time_stamp = self.get_clock().now().to_msg().sec
+        
+        if self.first_lap:
+            self.time = time_stamp
+        else:
+            delta_time = time_stamp - self.time
+            self.time = time_stamp
 
-        if self.time>0 :
-            dt = timestamp - self.time
-
-        self.time = timestamp
-        print(f'dt: {dt}')
 
         if msg.detected == True : # if a feature is detected
 
@@ -63,16 +65,10 @@ class Tracker(Node):
 
                 y = (msg.center.y - 200)/alpha_y
                 x = (msg.center.x - 320)/alpha_x
-                print(f'center: {msg.center.x}, {msg.center.y}')
-                print(f'x: {x}, y: {y}')
 
-                self.x_memmory = x
-                self.y_memmory = y
+                if not self.first_lap:
 
-                Z = 0.11 # the distance from the camera to the target in meters
-
-
-                if not(self.first_lap):
+                    Z = 0.11 # the distance from the camera to the target in meters
 
                     L = np.array([[-1/Z, 0, x/Z, x*y, -(1+x*x), y], [0, -1/Z, y/Z, 1+y*y, -x*y, -x]])
 
@@ -116,12 +112,23 @@ class Tracker(Node):
                     # Js matrix
                     Js = np.dot(L,np.dot(W,np.dot(R,J)))
                     
-                    # Optimal q_dot
+                    # Calculate the desired s
                     s = np.array([x, y])
+
+                    # Calculate the estimated s_dot
+                    x_dot = (x - self.x_memmory)/delta_time
+                    y_dot = (y - self.y_memmory)/delta_time
+                    s_dot = np.array([x_dot, y_dot])
+
+                    self.x_memmory = x
+                    self.y_memmory = y
+
+                    # Calculate the estimated q_dot
+                    q_dot = np.array([self.latest_joint1_command.data, self.latest_joint2_command.data]).T
 
                     # Calculate P and q for the QP problem
                     P = matrix(np.dot(Js.T, Js))  # P = Js^TJs
-                    q = matrix(-self.lambda_ * np.dot(Js.T, s))  # q = -Js^T * lambda * s
+                    q = matrix(np.dot(Js.T,-self.lambda_*s + s_dot - np.dot(Js,q_dot)))  # q = Js^T * [lambda * s + s_dot - Js * q_dot]
 
                     care_param = 0.9
                     #first task : joint limits
@@ -162,24 +169,30 @@ class Tracker(Node):
                     joint2_command.data = q_dot[1]
 
                     #print the commands in degrees
-                    print(f'joint1_command: {joint1_command.data*180/math.pi}')
-                    print(f'joint2_command: {joint2_command.data*180/math.pi}')
+                    self.get_logger().info(f'Joint1 Command: {math.degrees(joint1_command.data)}')
+                    self.get_logger().info(f'Joint2 Command: {math.degrees(joint2_command.data)}')
                     self.joint1_publisher_.publish(joint1_command)
                     self.joint2_publisher_.publish(joint2_command)
 
                     self.latest_joint1_command = joint1_command
                     self.latest_joint2_command = joint2_command
+                
                 else:
+                    self.x_memmory = x
+                    self.y_memmory = y
                     self.first_lap = False
+                    self.get_logger().info('First lap')
+                    self.joint1_publisher_.publish(self.latest_joint1_command)
+                    self.joint2_publisher_.publish(self.latest_joint2_command)
 
             except Exception as e:
-                print(e)
+                self.get_logger().error(f'calculating command: {e}')
                 return
 
         else: #if no feature is detected publish the latest joint commands again
             self.joint1_publisher_.publish(self.latest_joint1_command)
             self.joint2_publisher_.publish(self.latest_joint2_command)
-            print("No feature detected")
+            self.get_logger().info('No feature detected')
 
 
 def main(args=None):
