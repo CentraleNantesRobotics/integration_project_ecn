@@ -60,7 +60,7 @@ public:
 
 private:
     //Définition des variables globales
-    double kp =1.;
+    double kp =1.; //initialisation à 1 à modifier une fois les gains optimaux trouvés
     double kd =1.;
     double real_pos1 ;
     double real_pos2 ;
