@@ -2,12 +2,12 @@
 kp:
     type: std_msgs/Float64
     pose:
-        min: 0.
+        min: -100.
         max: 100.
         to: data
 kd:
     type: std_msgs/Float64
     pose:
-        min: 0.
+        min: -100.
         max: 100.
         to: data

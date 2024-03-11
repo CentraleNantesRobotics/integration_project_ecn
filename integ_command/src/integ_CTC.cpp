@@ -60,8 +60,8 @@ public:
 
 private:
     //Définition des variables globales
-    double kp;
-    double kd;
+    double kp =1.;
+    double kd =1.;
     double real_pos1 ;
     double real_pos2 ;
     double real_vel1 ;
