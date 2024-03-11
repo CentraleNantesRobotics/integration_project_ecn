@@ -1,5 +1,5 @@
 ﻿//integ_CTC is a Computed Torque Control node designed for INTEG project for Centrale Nantes Robotics
-//Thibault LEBLANC & Julien COUPEAUX & Luca MIMOUNI & Baptiste LARDINOIT, Version 1.0.3, March 2024
+//Thibault LEBLANC & Julien COUPEAUX & Luca MIMOUNI & Baptiste LARDINOIT, Version 1.0.4, March 2024
 
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/node.hpp>
@@ -18,7 +18,7 @@ public:
     ComputedTorqueControl()
         : Node("computed_torque_control") {
 
-        // Initialisation des subscriptions, des publishers
+        // Initialisation des subscriptions (états réel et désiré), des publishers(commandes calculées), du timer
 
 
         desired_jointstate_subscriber_ = create_subscription<sensor_msgs::msg::JointState>(
@@ -26,7 +26,7 @@ public:
                     10,
                     [this](const sensor_msgs::msg::JointState::SharedPtr msg) {
                         desiredJointStateCallback(msg);
-                    }); // A revoir en fonction du nom des topics des gens qui font la trajectoire
+                    }); // A ajuster en fonction du nom des topics des gens qui font la trajectoire
 
         joint_state_subscriber_ = create_subscription<sensor_msgs::msg::JointState>(
                     "/scara/joint_states",
@@ -55,10 +55,11 @@ public:
         computed_torque_publisher_joint2_ = this->create_publisher<std_msgs::msg::Float64MultiArray>(
             "/scara/joint_2_cmd_effort", 10);
 
-        timer_ = create_wall_timer(std::chrono::seconds(1), std::bind(&ComputedTorqueControl::ComputeTorque, this));
+        timer_ = create_wall_timer(std::chrono::milliseconds(50), std::bind(&ComputedTorqueControl::ComputeTorque, this));
 }
 
 private:
+    //Définition des variables globales
     double kp;
     double kd;
     double real_pos1 ;
@@ -72,22 +73,29 @@ private:
     double ad1;
     double ad2;
 
+
+    //Callback pour le Kp, utile dans le cas d'une optimisation par sliderpublisher par exemple ou pour un calcul externe du Kp
     void kpCallback(std_msgs::msg::Float64::SharedPtr k){
         kp=k->data;
     }
+
+    //Callback pour le Kd, utile dans le cas d'une optimisation par sliderpublisher par exemple ou pour un calcul externe du Kd
     void kdCallback(std_msgs::msg::Float64::SharedPtr k){
         kd=k->data;
     }
+
+    //Callback pour le l'état réel des liaisons
     void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr joint_state){
-        //définition de l'état
+
         real_pos1 = joint_state->position[1];
         real_pos2 = joint_state->position[2];
         real_vel1 = joint_state->velocity[1];
         real_vel2 = joint_state->velocity[2];
     }
+
+    //Callback pour l'état désiré, la consigne publiée par exemple par les nodes des packages de trajectoire
     void desiredJointStateCallback(const sensor_msgs::msg::JointState::SharedPtr desired_joint_state) {
 
-        //définition des angles et vitesses désirées
         pd1 = desired_joint_state->position[1];
         pd2 = desired_joint_state->position[2];
         vd1 = desired_joint_state->velocity[1];
@@ -95,11 +103,14 @@ private:
         ad1 = desired_joint_state->effort[1];
         ad2 = desired_joint_state->effort[2];
     }
+
+
+    //Callback pour le calcul et la publication des couples calculés.
     void ComputeTorque(){
 
         //CallBack par timer
 
-        //définition des variables
+        //définition des variables pour le modèle du robot
         double g = 0;
         double m1 = 7.1 ;
         double m2 = 3.18 ;
@@ -114,6 +125,7 @@ private:
         double Fs2=0.409582;
         double Fv2=0.200203;
 
+        //Définition du vecteur des paramètres identifiés, les paramètres vu comme sans influence dans une étude préalable sont omis.
         Eigen::Vector2d parameters;
         parameters(0)=Ja;
         parameters(1)=zz2;
@@ -123,13 +135,13 @@ private:
         parameters(5)=Fs2;
         parameters(6)=Fv2;
 
-        //définition des erreurs
+        //définition des erreurs, sous régulateur proportionnel
         double e1=(pd1-real_pos1)*kp;
         double e2=(pd2-real_pos2)*kp;
         double ev1=(vd1-real_vel1)*kd;
         double ev2=(vd2-real_vel2)*kd;
 
-        //définition de la matrice d'intertie
+        //définition de la matrice du modèle dynamique
         Eigen::MatrixXd model;
         model(0,0)=ad1;
         model(1,0)=0;
@@ -147,17 +159,19 @@ private:
         model(1,6)=ev2;
 
 
-        // Calcul du couple en utilisant le contrôle par couple calculé
-        // inverse_dynamics_model_ est à utiliser
+        // déifinition variables porteuses des couples résultats
         std_msgs::msg::Float64MultiArray computed_torque_msg_joint1;
         std_msgs::msg::Float64MultiArray computed_torque_msg_joint2;
 
+        // Calcul des couples
         Eigen::Vector2d computed_torque;
         computed_torque=model*parameters;
 
         computed_torque_msg_joint1.data[0] = computed_torque(0,0);
         computed_torque_msg_joint2.data[0] = computed_torque(1,0);
 
+
+        // Publication des couples
         computed_torque_publisher_joint1_->publish(computed_torque_msg_joint1);
         computed_torque_publisher_joint2_->publish(computed_torque_msg_joint2);
     }
