@@ -24,14 +24,14 @@ class TrajectoryClient : public rclcpp::Node
 
         subscriber_initial_pose = this->create_subscription<sensor_msgs::msg::JointState>("/scara/joint_states", 10, std::bind(&TrajectoryClient::callback_initial_pose, this, _1));
 
-        q1_ = create_subscription<std_msgs::msg::Float64>(
+        q1_subscriber = create_subscription<std_msgs::msg::Float64>(
                     "/q1_chosen",
                     10,
                     [this](const std_msgs::msg::Float64::SharedPtr msg) {
                     q1Callback(msg);
         });
 
-        q2_ = create_subscription<std_msgs::msg::Float64>(
+        q2_subscriber = create_subscription<std_msgs::msg::Float64>(
                     "/q2_chosen",
                     10,
                     [this](const std_msgs::msg::Float64::SharedPtr msg) {
@@ -44,16 +44,15 @@ class TrajectoryClient : public rclcpp::Node
     double q1;
     double q2;
 
-    //Callback pour le Kp, utile dans le cas d'une optimisation par sliderpublisher par exemple ou pour un calcul externe du Kp
-    void q1Callback(std_msgs::msg::Float64::SharedPtr k){
-        q1=k->data;
+    void q1Callback(std_msgs::msg::Float64::SharedPtr msg)
+    {
+        q1=msg->data;
         callback_goal_pose();
-
     }
 
-    //Callback pour le Kd, utile dans le cas d'une optimisation par sliderpublisher par exemple ou pour un calcul externe du Kd
-    void q2Callback(std_msgs::msg::Float64::SharedPtr k){
-        q2=k->data;
+    void q2Callback(std_msgs::msg::Float64::SharedPtr msg)
+    {
+        q2=msg->data;
         callback_goal_pose();
 
     }
@@ -106,8 +105,8 @@ class TrajectoryClient : public rclcpp::Node
 
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr subscriber_initial_pose;
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr subscriber_goal_pose;
-    rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr q1_;
-    rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr q2_;
+    rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr q1_subscriber;
+    rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr q2_subscriber;
 
 };
 
