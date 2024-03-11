@@ -189,10 +189,6 @@ private:
     rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr computed_torque_publisher_joint2_;
     rclcpp::TimerBase::SharedPtr timer_;
 
-
-    rclcpp::TimerBase::SharedPtr controlTimer_;
-
-    std::vector<std::vector<double>> inverse_dynamics_model_;
 };
 
 
