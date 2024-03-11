@@ -54,6 +54,8 @@ public:
 
         computed_torque_publisher_joint2_ = this->create_publisher<std_msgs::msg::Float64MultiArray>(
             "/scara/joint_2_cmd_effort", 10);
+
+        timer_ = create_wall_timer(std::chrono::seconds(1), std::bind(&ComputedTorqueControl::ComputeTorque, this));
 }
 
 private:
@@ -94,6 +96,9 @@ private:
         ad2 = desired_joint_state->effort[2];
     }
     void ComputeTorque(){
+
+        //CallBack par timer
+
         //définition des variables
         double g = 0;
         double m1 = 7.1 ;
@@ -163,6 +168,8 @@ private:
     rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr kd_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr computed_torque_publisher_joint1_;
     rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr computed_torque_publisher_joint2_;
+    rclcpp::TimerBase::SharedPtr timer_;
+
 
     rclcpp::TimerBase::SharedPtr controlTimer_;
 
