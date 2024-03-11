@@ -31,7 +31,7 @@ class Tracker(Node):
         self.x_memmory = 0
         self.y_memmory = 0
 
-        self.declare_parameter('lambda', 1.0)
+        self.declare_parameter('lambda', 0.5)
         self.lambda_ = self.get_parameter('lambda').value
 
     def joint_states_callback(self, msg):
@@ -44,14 +44,16 @@ class Tracker(Node):
         joint2_command = Float64()
 
         #get time 
-        time_stamp = self.get_clock().now().to_msg().sec
+        time_stamp = self.get_clock().now().to_msg().sec + self.get_clock().now().to_msg().nanosec * 1e-9
         
         if self.first_lap:
             self.time = time_stamp
+            delta_time = 1
         else:
             delta_time = time_stamp - self.time
             self.time = time_stamp
 
+        print(f'delta_time: {delta_time}')
 
         if msg.detected == True : # if a feature is detected
 
@@ -73,10 +75,7 @@ class Tracker(Node):
                     L = np.array([[-1/Z, 0, x/Z, x*y, -(1+x*x), y], [0, -1/Z, y/Z, 1+y*y, -x*y, -x]])
 
                     # Transformation matrix from the camera frame to the end effector frame
-                    # Rotation matrices
-                    #Rcam_camOpt = np.array([[0, 0, 1], [-1, 0, 0], [0, -1, 0]])
-                    #Rcam_EEframe = np.array([[0, 0, 1], [0, 1, 0], [-1, 0, 0]])
-                    #RcamOpt_EEframe = np.dot( Rcam_EEframe, Rcam_camOpt)
+                    # Rotation matrix
                     
                     RcamOpt_EEframe = np.array([[0, -1, 0], [-1, 0, 0], [0, 0, -1]])
 
@@ -94,9 +93,8 @@ class Tracker(Node):
                     W = np.block([[RcamOpt_EEframe, txR],[np.zeros((3, 3)), RcamOpt_EEframe]])
 
                     # Rotation matrix from the end effector frame to the base frame
-                    q12 = self.q1 + self.q2 + math.pi/2
+                    q12 = self.q1 + self.q2 - math.pi/2
                     R0_ee = np.array([[np.cos(q12), -np.sin(q12), 0], [np.sin(q12), np.cos(q12), 0], [0, 0, 1]])
-                    print(f'R0_ee: {R0_ee}')
 
 
                     R = np.block([[R0_ee, np.zeros((3,3))], [np.zeros((3,3)), R0_ee]]) # the transformation matrix from the end effector frame to the base frame
@@ -120,6 +118,8 @@ class Tracker(Node):
                     y_dot = (y - self.y_memmory)/delta_time
                     s_dot = np.array([x_dot, y_dot])
 
+                    print(f's_dot: {s_dot}')
+
                     self.x_memmory = x
                     self.y_memmory = y
 
@@ -128,7 +128,8 @@ class Tracker(Node):
 
                     # Calculate P and q for the QP problem
                     P = matrix(np.dot(Js.T, Js))  # P = Js^TJs
-                    q = matrix(np.dot(Js.T,-self.lambda_*s + s_dot - np.dot(Js,q_dot)))  # q = Js^T * [lambda * s + s_dot - Js * q_dot]
+                    q = matrix(np.dot(Js.T,self.lambda_*s + s_dot - np.dot(Js,q_dot)))  # q = Js^T * [lambda * s + s_dot - Js * q_dot]
+                    # q = matrix(self.lambda_*np.dot(Js.T,s))  # q =  Js^T *lambda * s
 
                     care_param = 0.9
                     #first task : joint limits
@@ -152,14 +153,17 @@ class Tracker(Node):
                     # Reshape h1 and h2 to ensure they are column vectors
                     h1 = h1.reshape(-1, 1)  
                     h2 = h2.reshape(-1, 1)  
-                    G = np.vstack((G1, G2)).astype(np.float64)  # Ensure G is double precision
+                    G = G2.astype(np.float64) 
+                    #G = np.vstack((G1, G2)).astype(np.float64)  # Ensure G is double precision
                     G = matrix(G)  # Convert to cvxopt matrix
-                    h = np.vstack((h1, h2)).astype(np.float64)  # Similarly, ensure h is double precision
+                    h = h2.astype(np.float64)  
+                    #h = np.vstack((h1, h2)).astype(np.float64)  # Similarly, ensure h is double precision
                     h = matrix(h)
                     A = None
                     b = None
 
                     # Solve QP problem
+                    print('Solving QP problem')
                     sol = solvers.qp(P, q, G, h, A, b)
 
                     # Extract and print the optimal q_dot
