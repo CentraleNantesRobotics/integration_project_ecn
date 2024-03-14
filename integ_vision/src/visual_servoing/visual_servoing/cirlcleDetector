@@ -1,0 +1,73 @@
+# Code by Ramses Miam and Daniel Cruz
+
+#!/usr/bin/python3
+import rclpy
+from rclpy.node import Node
+from sensor_msgs.msg import Image
+import cv2
+import numpy as np
+from cv_bridge import CvBridge
+from integ_msgs.msg import CenterAndArea
+
+class circleDetector(Node):
+    def __init__(self):
+        super().__init__('circleDetector')
+        
+        self.imgs_sub = self.create_subscription(Image, 'scara/image', self.imgs_cb, 10) # a subscriber to the camera topic
+        self.centerAndArea_pub = self.create_publisher(CenterAndArea, 'circle_center', 10) # a publisher of a custom message type that contains a point and and integer
+        self.cv_bridge = CvBridge() # Create a CvBridge object to convert the image message to OpenCV format
+
+    def imgs_cb(self, msg):
+        
+        # Convert the image message to OpenCV format
+        try:
+            imsg_cv = self.cv_bridge.imgmsg_to_cv2(msg, desired_encoding='passthrough')
+        except Exception as e:
+            print("error converting the image message to OpenCV format: ", e)
+            return
+
+        # Convert from RGB to gray
+        imgs_gray = cv2.cvtColor(imsg_cv, cv2.COLOR_BGR2GRAY)
+
+        # Apply Gaussian blur to reduce noise
+        imgs_blur = cv2.GaussianBlur(imgs_gray, (5, 5), 0)
+        imgs_thresh = cv2.adaptiveThreshold(imgs_blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
+
+        # Apply Hough Circle Transform
+        circles = cv2.HoughCircles(imgs_thresh, cv2.HOUGH_GRADIENT, dp=1, minDist=200, param1=100, param2=30, minRadius=20, maxRadius=50)
+        if circles is not None:
+            circles = np.round(circles[0, :]).astype("int")
+            for (x, y, r) in circles:
+                cv2.circle(imsg_cv, (x, y), r, (0, 255, 0), 4)
+                cv2.rectangle(imsg_cv, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
+
+            center_and_area = CenterAndArea()
+            center_and_area.center.x = float(circles[0][0])
+            center_and_area.center.y = float(circles[0][1])
+            center_and_area.area = len(circles)
+            center_and_area.detected = True
+            self.centerAndArea_pub.publish(center_and_area)
+        else:
+            center_and_area = CenterAndArea()
+            center_and_area.detected = False
+            self.centerAndArea_pub.publish(center_and_area)
+
+
+        window_name = 'blur'
+        cv2.imshow(window_name, imgs_blur)
+        cv2.waitKey(3)
+
+        window_name = 'Circle Detection'
+        cv2.imshow(window_name, imsg_cv)
+        cv2.waitKey(3)
+
+def main(args=None):
+    rclpy.init(args=args)
+    detector = circleDetector()
+    # Add your main code here
+    rclpy.spin(detector)
+    detector.destroy_node()
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
