@@ -1,5 +1,5 @@
 ﻿//integ_CTC is a Computed Torque Control node designed for INTEG project for Centrale Nantes Robotics
-//Thibault LEBLANC & Julien COUPEAUX & Luca MIMOUNI & Baptiste LARDINOIT, Version 1.0.3, March 2024
+//Thibault LEBLANC & Julien COUPEAUX & Luca MIMOUNI & Baptiste LARDINOIT, Version 1.0.4, March 2024
 
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/node.hpp>
@@ -18,62 +18,103 @@ public:
     ComputedTorqueControl()
         : Node("computed_torque_control") {
 
-        // Initialisation des subscriptions, des publishers
+        // Initialisation des subscriptions (états réel et désiré), des publishers(commandes calculées), du timer
 
 
         desired_jointstate_subscriber_ = create_subscription<sensor_msgs::msg::JointState>(
                     "/scara/desired_joint_states",
                     10,
                     [this](const sensor_msgs::msg::JointState::SharedPtr msg) {
-                        jointStateCallback(nullptr, msg, nullptr, nullptr);
-                    }); // A revoir en fonction du nom des topics des gens qui font la trajectoire
+                        desiredJointStateCallback(msg);
+                    }); // A ajuster en fonction du nom des topics des gens qui font la trajectoire
 
         joint_state_subscriber_ = create_subscription<sensor_msgs::msg::JointState>(
                     "/scara/joint_states",
                     10,
                     [this](const sensor_msgs::msg::JointState::SharedPtr msg) {
-                        jointStateCallback(msg, nullptr, nullptr, nullptr);
+                        jointStateCallback(msg);
                     });
 
         kp_ = create_subscription<std_msgs::msg::Float64>(
                     "/kp",
                     10,
                     [this](const std_msgs::msg::Float64::SharedPtr msg) {
-             jointStateCallback(nullptr, nullptr, msg, nullptr);
+                    kpCallback(msg);
         });
 
         kd_ = create_subscription<std_msgs::msg::Float64>(
                     "/kd",
                     10,
                     [this](const std_msgs::msg::Float64::SharedPtr msg) {
-             jointStateCallback(nullptr, nullptr, nullptr, msg);
+                    kdCallback(msg);
                     });
 
-        computed_torque_publisher_joint1_ = this->create_publisher<std_msgs::msg::Float64MultiArray>(
+        computed_torque_publisher_joint1_ = this->create_publisher<std_msgs::msg::Float64>(
             "/scara/joint_1_cmd_effort", 10);
 
-        computed_torque_publisher_joint2_ = this->create_publisher<std_msgs::msg::Float64MultiArray>(
+        computed_torque_publisher_joint2_ = this->create_publisher<std_msgs::msg::Float64>(
             "/scara/joint_2_cmd_effort", 10);
+
+        timer_ = create_wall_timer(std::chrono::milliseconds(50), std::bind(&ComputedTorqueControl::ComputeTorque, this));
 }
 
 private:
+    //Définition des variables globales
+    double kp =1.; //initialisation à 1 à modifier une fois les gains optimaux trouvés
+    double kd =1.;
+    double real_pos1 ;
+    double real_pos2 ;
+    double real_vel1 ;
+    double real_vel2 ;
+    double pd1;
+    double pd2;
+    double vd1;
+    double vd2;
+    double ad1;
+    double ad2;
 
 
-     void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr joint_state, const sensor_msgs::msg::JointState::SharedPtr desired_joint_state, const std_msgs::msg::Float64::SharedPtr kp, const std_msgs::msg::Float64::SharedPtr kd) {
+    //Callback pour le Kp, utile dans le cas d'une optimisation par sliderpublisher par exemple ou pour un calcul externe du Kp
+    void kpCallback(std_msgs::msg::Float64::SharedPtr k){
+        kp=k->data;
 
-        //définition des angles et vitesses désirées
-        double pd1 = desired_joint_state->position[1];
-        double pd2 = desired_joint_state->position[2];
-        double vd1 = desired_joint_state->velocity[1];
-        double vd2 = desired_joint_state->velocity[2];
-        double ad1 = desired_joint_state->effort[1];
-        double ad2 = desired_joint_state->effort[2];
-        //définition de l'état
-        double real_pos1 = joint_state->position[1];
-        double real_pos2 = joint_state->position[2];
-        double real_vel1 = joint_state->velocity[1];
-        double real_vel2 = joint_state->velocity[2];
-        //définition des variables
+    }
+
+    //Callback pour le Kd, utile dans le cas d'une optimisation par sliderpublisher par exemple ou pour un calcul externe du Kd
+    void kdCallback(std_msgs::msg::Float64::SharedPtr k){
+        kd=k->data;
+
+    }
+
+    //Callback pour le l'état réel des liaisons
+    void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr joint_state){
+
+        real_pos1 = joint_state->position[1];
+        real_pos2 = joint_state->position[2];
+        real_vel1 = joint_state->velocity[1];
+        real_vel2 = joint_state->velocity[2];
+
+    }
+
+    //Callback pour l'état désiré, la consigne publiée par exemple par les nodes des packages de trajectoire
+    void desiredJointStateCallback(const sensor_msgs::msg::JointState::SharedPtr desired_joint_state) {
+
+        pd1 = desired_joint_state->position[1];
+        pd2 = desired_joint_state->position[2];
+        vd1 = desired_joint_state->velocity[1];
+        vd2 = desired_joint_state->velocity[2];
+        ad1 = desired_joint_state->effort[1];
+        ad2 = desired_joint_state->effort[2];
+
+    }
+
+
+    //Callback pour le calcul et la publication des couples calculés.
+    void ComputeTorque(){
+
+        //CallBack par timer
+
+        //définition des variables pour le modèle du robot
         double g = 0;
         double m1 = 7.1 ;
         double m2 = 3.18 ;
@@ -88,7 +129,8 @@ private:
         double Fs2=0.409582;
         double Fv2=0.200203;
 
-        Eigen::Vector2d parameters;
+        //Définition du vecteur des paramètres identifiés, les paramètres vu comme sans influence dans une étude préalable sont omis.
+        Eigen::Vector<double,7> parameters;
         parameters(0)=Ja;
         parameters(1)=zz2;
         parameters(2)=mx2;
@@ -97,14 +139,15 @@ private:
         parameters(5)=Fs2;
         parameters(6)=Fv2;
 
-        //définition des erreurs
-        double e1=(pd1-real_pos1)*kp->data;
-        double e2=(pd2-real_pos2)*kp->data;
-        double ev1=(vd1-real_vel1)*kd->data;
-        double ev2=(vd2-real_vel2)*kd->data;
 
-        //définition de la matrice d'intertie
-        Eigen::MatrixXd model;
+        //définition des erreurs, sous régulateur proportionnel
+        double e1=(pd1-real_pos1)*kp;
+        double e2=(pd2-real_pos2)*kp;
+        double ev1=(vd1-real_vel1)*kd;
+        double ev2=(vd2-real_vel2)*kd;
+
+        //définition de la matrice du modèle dynamique
+        Eigen::Matrix<double,2,7> model;
         model(0,0)=ad1;
         model(1,0)=0;
         model(0,1)=model(1,1)=ad1+ad2;
@@ -121,17 +164,19 @@ private:
         model(1,6)=ev2;
 
 
-        // Calcul du couple en utilisant le contrôle par couple calculé
-        // inverse_dynamics_model_ est à utiliser
-        std_msgs::msg::Float64MultiArray computed_torque_msg_joint1;
-        std_msgs::msg::Float64MultiArray computed_torque_msg_joint2;
+        // déifinition variables porteuses des couples résultats
+        std_msgs::msg::Float64 computed_torque_msg_joint1;
+        std_msgs::msg::Float64 computed_torque_msg_joint2;
 
+        // Calcul des couples
         Eigen::Vector2d computed_torque;
         computed_torque=model*parameters;
 
-        computed_torque_msg_joint1.data[0] = computed_torque(0,0);
-        computed_torque_msg_joint2.data[0] = computed_torque(1,0);
+        computed_torque_msg_joint1.data = computed_torque(0);
+        computed_torque_msg_joint2.data = computed_torque(1);
 
+
+        // Publication des couples
         computed_torque_publisher_joint1_->publish(computed_torque_msg_joint1);
         computed_torque_publisher_joint2_->publish(computed_torque_msg_joint2);
     }
@@ -140,13 +185,12 @@ private:
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr desired_jointstate_subscriber_;
     rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr kp_;
     rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr kd_;
-    rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr computed_torque_publisher_joint1_;
-    rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr computed_torque_publisher_joint2_;
+    rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr computed_torque_publisher_joint1_;
+    rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr computed_torque_publisher_joint2_;
+    rclcpp::TimerBase::SharedPtr timer_;
 
-    rclcpp::TimerBase::SharedPtr controlTimer_;
-
-    std::vector<std::vector<double>> inverse_dynamics_model_;
 };
+
 
 int main(int argc, char *argv[]) {
         rclcpp::init(argc, argv);

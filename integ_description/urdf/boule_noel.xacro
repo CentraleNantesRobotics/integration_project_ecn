@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<robot name="target" xmlns:xacro="http://www.ros.org/wiki/xacro" >
+
+  <xacro:arg name="vel" default="1."/>
+
+  <xacro:property name="offset" default=".4"/>
+  <xacro:property name="radius" default=".1"/>
+  <xacro:property name="size" default=".03"/>
+
+  <link name="world"/>
+
+  <joint name="world_joint" type="fixed">
+	<origin xyz="0 ${-offset} 1" rpy="0 0. 0"/>
+    <parent link="world"/>
+    <child link="target/base_link"/>
+  </joint>
+
+  <link name="target/base_link">
+    <inertial>
+      <mass
+        value="15.137" />
+      <inertia
+        ixx="1.1651"
+        ixy="0.00079443"
+        ixz="-5.3686E-06"
+        iyy="1.1282"
+        iyz="-0.004763"
+        izz="2.2914" />
+    </inertial>
+  </link>
+
+  <link name="target/ball">
+    <inertial>
+       <mass
+        value="1." />
+      <inertia
+        ixx="0.147885"
+        ixy="0.0000"
+        ixz="-0.033179"
+        iyy="0.196455"
+        iyz="0.0000"
+        izz="0.055095" /> 
+    </inertial>
+    <visual>
+      <origin xyz="${radius} 0 0"/>
+      <geometry>
+        <mesh filename="file://$(find integ_description)/meshes/boule_noel.dae" scale="0.1 0.1 0.1"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="ball" type="continuous">
+    <parent link="target/base_link" />
+    <child link="target/ball" />
+    <axis xyz="0 0 1" />
+  </joint>
+
+  <gazebo>
+    <plugin
+        filename="libignition-gazebo-joint-controller-system.so"
+        name="ignition::gazebo::systems::JointController">
+        <joint_name>ball</joint_name>
+        <initial_velocity>$(arg vel)</initial_velocity>
+    </plugin>
+
+    <plugin 
+        filename="libignition-gazebo-joint-state-publisher-system.so" 
+        name="ignition::gazebo::systems::JointStatePublisher">
+    <!-- Parameters would go here if there were any -->
+    </plugin>
+
+
+  </gazebo>
+
+</robot>
