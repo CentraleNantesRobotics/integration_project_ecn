@@ -1,0 +1,18 @@
+<package format="3">
+  <name>visual_servoing</name>
+  <version>0.0.0</version>
+  <description>A ROS2 package for visual servoing.</description>
+  <maintainer email="lemmeltom@gmail.com">t-lemmel</maintainer>
+  <license>Insert your license here</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <!-- Other dependencies -->
+  <depend>rclpy</depend>
+  <depend>integ_msgs</depend>
+  <depend>std_msgs</depend>
+
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
