@@ -53,8 +53,6 @@ class Tracker(Node):
             delta_time = time_stamp - self.time
             self.time = time_stamp
 
-        print(f'delta_time: {delta_time}')
-
         if msg.detected == True : # if a feature is detected
 
             try : # implement the command law here
@@ -131,7 +129,7 @@ class Tracker(Node):
                     q = matrix(np.dot(Js.T,self.lambda_*s + s_dot - np.dot(Js,q_dot)))  # q = Js^T * [lambda * s + s_dot - Js * q_dot]
                     # q = matrix(self.lambda_*np.dot(Js.T,s))  # q =  Js^T *lambda * s
 
-                    care_param = 0.9
+                    care_param = 1 
                     #first task : joint limits
                     G1 = np.array([[1, 0], [-1, 0], [0, 1], [0, -1]])
                     q1_max = care_param*0
@@ -144,7 +142,7 @@ class Tracker(Node):
 
                     #second task : joint velocity limits
                     G2 = np.array([[1, 0], [-1, 0], [0, 1], [0, -1]])
-                    q_dot_max = care_param*10
+                    q_dot_max = care_param*1
 
                     h2 = care_param*np.array([q_dot_max, q_dot_max, q_dot_max, q_dot_max])
 
@@ -153,11 +151,9 @@ class Tracker(Node):
                     # Reshape h1 and h2 to ensure they are column vectors
                     h1 = h1.reshape(-1, 1)  
                     h2 = h2.reshape(-1, 1)  
-                    G = G2.astype(np.float64) 
-                    #G = np.vstack((G1, G2)).astype(np.float64)  # Ensure G is double precision
+                    G = np.vstack((G1, G2)).astype(np.float64)  # Ensure G is double precision
                     G = matrix(G)  # Convert to cvxopt matrix
-                    h = h2.astype(np.float64)  
-                    #h = np.vstack((h1, h2)).astype(np.float64)  # Similarly, ensure h is double precision
+                    h = np.vstack((h1, h2)).astype(np.float64)  # Similarly, ensure h is double precision
                     h = matrix(h)
                     A = None
                     b = None
