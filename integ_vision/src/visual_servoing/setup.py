@@ -22,6 +22,7 @@ setup(
         'console_scripts': [
             'FeatureDetector = visual_servoing.FeatureDetector:main',
             'tracker = visual_servoing.tracker:main',
+            'cirlcleDetector = visual_servoing.cirlcleDetector:main',
         ],
     },
 )
