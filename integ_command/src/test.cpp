@@ -40,9 +40,13 @@ private :
 
         // Trajectoir d'une sinusoide de frequence 'freq' et d'amplitude 'amplitude'
         message.name.push_back("trajectoire");
-        message.position.push_back(amplitude * std::sin(2.0 * PI * freq * this->get_clock()->now().seconds()));
-        message.velocity.push_back(amplitude * 2.0 * PI * freq * std::cos(2.0 * PI * freq * this->get_clock()->now().seconds()));
-        message.effort.push_back(- amplitude * 4.0 * pow(PI,2) * pow(freq,2) * std::sin(2.0 * PI * freq * this->get_clock()->now().seconds()));
+        message.position.push_back(PI/2+amplitude * std::cos(2.0 * PI * freq * this->get_clock()->now().seconds()));
+        message.position.push_back(PI/2+amplitude * std::cos(2.0 * PI * freq * this->get_clock()->now().seconds()));
+        message.velocity.push_back(amplitude * 2.0 * PI * freq * std::sin(2.0 * PI * freq * this->get_clock()->now().seconds()));
+        message.velocity.push_back(amplitude * 2.0 * PI * freq * std::sin(2.0 * PI * freq * this->get_clock()->now().seconds()));
+        message.effort.push_back(- amplitude * 4.0 * pow(PI,2) * pow(freq,2) * std::cos(2.0 * PI * freq * this->get_clock()->now().seconds()));
+        message.effort.push_back(- amplitude * 4.0 * pow(PI,2) * pow(freq,2) * std::cos(2.0 * PI * freq * this->get_clock()->now().seconds()));
+
 
 
         //Publish the message
@@ -50,9 +54,9 @@ private :
     }
 
 
-    const double amplitude = 1.0;
     const double PI = 3.14;
-    const double freq = 1.0;
+    const double amplitude = PI/2-0.5;
+    const double freq = 0.010;
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr traj_test_publisher_;
     rclcpp::TimerBase::SharedPtr timer_;
 

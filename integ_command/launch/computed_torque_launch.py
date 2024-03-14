@@ -1,7 +1,7 @@
 from simple_launch import SimpleLauncher, GazeboBridge
 
 sl = SimpleLauncher(use_sim_time = True)
-sl.declare_arg('sliders', False)    # for manual control
+sl.declare_arg('sliders', True)    # for manual control
 
 
 def launch_setup():

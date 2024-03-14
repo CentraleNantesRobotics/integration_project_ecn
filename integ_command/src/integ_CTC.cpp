@@ -1,5 +1,5 @@
-﻿//integ_CTC is a Computed Torque Control node designed for INTEG project for Centrale Nantes Robotics
-//Thibault LEBLANC & Julien COUPEAUX & Luca MIMOUNI & Baptiste LARDINOIT, Version 1.0.4, March 2024
+//integ_CTC is a Computed Torque Control node designed for INTEG project for Centrale Nantes Robotics
+//Thibault LEBLANC & Julien COUPEAUX & Luca MIMOUNI & Baptiste LARDINOIT, Version 1.0.5, March 2024
 
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/node.hpp>
@@ -35,18 +35,31 @@ public:
                         jointStateCallback(msg);
                     });
 
-        kp_ = create_subscription<std_msgs::msg::Float64>(
-                    "/kp",
+        kp1_ = create_subscription<std_msgs::msg::Float64>(
+                    "/kp1",
                     10,
                     [this](const std_msgs::msg::Float64::SharedPtr msg) {
-                    kpCallback(msg);
+                    kp1Callback(msg);
         });
 
-        kd_ = create_subscription<std_msgs::msg::Float64>(
-                    "/kd",
+        kd1_ = create_subscription<std_msgs::msg::Float64>(
+                    "/kd1",
                     10,
                     [this](const std_msgs::msg::Float64::SharedPtr msg) {
-                    kdCallback(msg);
+                    kd1Callback(msg);
+                    });
+        kp2_ = create_subscription<std_msgs::msg::Float64>(
+                    "/kp2",
+                    10,
+                    [this](const std_msgs::msg::Float64::SharedPtr msg) {
+                    kp2Callback(msg);
+        });
+
+        kd2_ = create_subscription<std_msgs::msg::Float64>(
+                    "/kd2",
+                    10,
+                    [this](const std_msgs::msg::Float64::SharedPtr msg) {
+                    kd2Callback(msg);
                     });
 
         computed_torque_publisher_joint1_ = this->create_publisher<std_msgs::msg::Float64>(
@@ -55,13 +68,15 @@ public:
         computed_torque_publisher_joint2_ = this->create_publisher<std_msgs::msg::Float64>(
             "/scara/joint_2_cmd_effort", 10);
 
-        timer_ = create_wall_timer(std::chrono::milliseconds(50), std::bind(&ComputedTorqueControl::ComputeTorque, this));
+        timer_ = create_wall_timer(std::chrono::milliseconds(100), std::bind(&ComputedTorqueControl::ComputeTorque, this));
 }
 
 private:
     //Définition des variables globales
-    double kp =1.; //initialisation à 1 à modifier une fois les gains optimaux trouvés
-    double kd =1.;
+    double kp1 ;//=1000.; //initialisation à 1 à modifier une fois les gains optimaux trouvés
+    double kd1 ;//=25.;
+    double kp2 ;//=1000.; //initialisation à 1 à modifier une fois les gains optimaux trouvés
+    double kd2 ;//=25.;
     double real_pos1 ;
     double real_pos2 ;
     double real_vel1 ;
@@ -75,16 +90,27 @@ private:
 
 
     //Callback pour le Kp, utile dans le cas d'une optimisation par sliderpublisher par exemple ou pour un calcul externe du Kp
-    void kpCallback(std_msgs::msg::Float64::SharedPtr k){
-        kp=k->data;
+    void kp1Callback(std_msgs::msg::Float64::SharedPtr k){
+        kp1=k->data;
 
     }
 
     //Callback pour le Kd, utile dans le cas d'une optimisation par sliderpublisher par exemple ou pour un calcul externe du Kd
-    void kdCallback(std_msgs::msg::Float64::SharedPtr k){
-        kd=k->data;
+    void kd1Callback(std_msgs::msg::Float64::SharedPtr k){
+        kd1=k->data;
 
     }
+    void kp2Callback(std_msgs::msg::Float64::SharedPtr k){
+        kp2=k->data;
+
+    }
+
+    //Callback pour le Kd, utile dans le cas d'une optimisation par sliderpublisher par exemple ou pour un calcul externe du Kd
+    void kd2Callback(std_msgs::msg::Float64::SharedPtr k){
+        kd2=k->data;
+
+    }
+
 
     //Callback pour le l'état réel des liaisons
     void jointStateCallback(const sensor_msgs::msg::JointState::SharedPtr joint_state){
@@ -141,10 +167,10 @@ private:
 
 
         //définition des erreurs, sous régulateur proportionnel
-        double e1=(pd1-real_pos1)*kp;
-        double e2=(pd2-real_pos2)*kp;
-        double ev1=(vd1-real_vel1)*kd;
-        double ev2=(vd2-real_vel2)*kd;
+        double e1=(pd1-real_pos1)*kp1;
+        double e2=(pd2-real_pos2)*kp2;
+        double ev1=(vd1-real_vel1)*kd1;
+        double ev2=(vd2-real_vel2)*kd2;
 
         //définition de la matrice du modèle dynamique
         Eigen::Matrix<double,2,7> model;
@@ -183,8 +209,10 @@ private:
 
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_state_subscriber_;
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr desired_jointstate_subscriber_;
-    rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr kp_;
-    rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr kd_;
+    rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr kp1_;
+    rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr kd1_;
+    rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr kp2_;
+    rclcpp::Subscription<std_msgs::msg::Float64>::SharedPtr kd2_;
     rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr computed_torque_publisher_joint1_;
     rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr computed_torque_publisher_joint2_;
     rclcpp::TimerBase::SharedPtr timer_;
